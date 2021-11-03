@@ -1,0 +1,67 @@
+
+# render layouts with different graphs (relative neighborhood, knn) and aesthetics
+# https://en.wikipedia.org/wiki/Relative_neighborhood_graph
+#' @export
+
+render_graph <- function(
+  data, vars = c(x,y),
+  graph = "rng", aes = "default", k = 3,
+  color = "black", width = 0.5, alpha=0.5, coord=NULL) {
+
+  data <- data %>% dplyr::select({{vars}}) %>% dplyr::rename(x = 1, y = 2)
+
+  # compute graph from point layout
+  switch(
+    graph,
+
+    rng = {
+      graph <- as.data.frame(data) %>%
+        cccd::rng(k = k) %>% tidygraph::as_tbl_graph()
+    },
+
+    knn = {
+      graph <- as.data.frame(data) %>%
+        cccd::nng(k = k) %>% igraph::as.undirected(.) %>% tidygraph::as_tbl_graph()
+    }
+  )
+
+
+  # render graph
+  switch(
+    aes,
+
+    # edges as straight lines and nodes as points
+    default = {
+
+      graph %>%
+        ggraph::ggraph(layout = data) +
+        ggraph::geom_edge_link(edge_width = width, color = color, alpha = alpha) +
+        ggraph::geom_node_point(size = width * 1.5, color = color) +
+        coord + ggplot2::theme_void()
+    },
+
+    # edges as straight lines
+    line = {
+
+      graph %>%
+        ggraph::ggraph(layout = data) +
+        ggraph::geom_edge_link0(edge_width = width, color = color, lineend = "round") +
+        coord + ggplot2::theme_void()
+    },
+
+    # edges as Bezier curves
+    bezier = {
+
+      graph %>%
+        ggraph::ggraph(layout = data) +
+        ggraph::geom_edge_diagonal(
+          edge_width = width, color = color, alpha = alpha,
+          strength = 1, n = 100, lineend = "round", linejoin = "round") +
+        coord + ggplot2::theme_void()
+    }
+  )
+
+
+}
+
+

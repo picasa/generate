@@ -1,0 +1,38 @@
+Package: generate
+Title: Might Generate Rtistry 
+Version: 0.0.0.9000
+Authors@R: 
+    person("Pierre", "Casadebaig", , "pierre.casa@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-7225-936X"))
+Description: Personal collection of helper functions for algorithmic art. 
+License: BSD_3_clause + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+Imports: 
+    stars,
+    tibble,
+    deSolve,
+    cccd,
+    igraph,
+    tidygraph,
+    tidyselect,
+    ggraph,
+    lhs,
+    purrr,
+    furrr,
+    dplyr,
+    tidyr,
+    sf,
+    stringr,
+    magrittr,
+    ggplot2,
+    ggforce,
+    cowplot,
+    colorspace,
+    distr,
+    glue,
+    randtoolbox,
+    scales,
+    units
