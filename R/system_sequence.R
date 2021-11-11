@@ -233,18 +233,24 @@ render_node <- function(
   switch(
     method,
 
+    path = {
+      plot <- data %>%
+        ggplot2::ggplot(ggplot2::aes(x, y, group = id)) +
+        ggplot2::geom_path(size = 0.5, alpha = 1)
+    },
+
     spline = {
       plot <- data %>%
         ggplot2::ggplot(ggplot2::aes(x, y, group = id)) +
-        ggforce::geom_bspline(size = 0.5, alpha=0.5)
+        ggforce::geom_bspline(size = 0.5, alpha = 1)
     },
 
     segment = {
       plot <- data %>%
         ggplot2::ggplot(ggplot2::aes(x, y, xend = xend, yend = yend, group = id)) +
         ggplot2::geom_segment(size = 0.5, lineend = "round", alpha = 0.3) +
-        ggplot2::geom_path(size=0.5, alpha=0.5) +
-        ggplot2::geom_path(ggplot2::aes(x=xend, y=yend), size=0.5, alpha=0.5)
+        ggplot2::geom_path(size = 0.5, alpha = 1) +
+        ggplot2::geom_path(ggplot2::aes(x=xend, y=yend), size=0.5, alpha = 1)
     },
 
     polygon = {

@@ -44,7 +44,7 @@ read_dem <- function(coord, buffer = 1000, dep, source="db_alti"){
         )
       )
 
-  dem <- purrr::reduce(dem_list$dem, stars::st_mosaic())
+  dem <- purrr::reduce(dem_list$dem, stars::st_mosaic)
 
   return(dem)
 
