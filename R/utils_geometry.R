@@ -92,5 +92,3 @@ buffer_rectangle <- function(
     c(x_shift, y_shift, x_shift, y_shift)
 }
 
-# curves ####
-

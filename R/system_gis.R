@@ -269,8 +269,7 @@ filter_ridge <- function(
   data_cell <- data %>%
     dplyr::mutate(zl = cumsum(is.na(zn))) %>%
     dplyr::group_by(zl) %>% dplyr::mutate(zl_n = dplyr::n()) %>% dplyr::ungroup() %>%
-    dplyr::mutate(zn = dplyr::if_else(zl_n <= length_n, NA_real_, zn)) # %>%
-    # mutate(zn = if_else((zl_n <= 2 & dist_y >= 0.90), NA_real_, zn)) # f(distance)
+    dplyr::mutate(zn = dplyr::if_else(zl_n <= length_n, NA_real_, zn))
 
   # filter for ridge lines with a low contribution
   data_line <- data %>%

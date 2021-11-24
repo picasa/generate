@@ -167,13 +167,14 @@ gen_leaf <- function(i, a = 20, x0 = 0, y0 = 0, shape = "spiral") {
 #'   argument. "polygon" builds an oriented polygon. "polygon_lm" builds an
 #'   oriented polygon with decreasing size along path length.
 #' @param seed value of the random seed, random if missing
+#' @param ... used for parallel mapping
 #' @return a dataframe with coordinates of multiple leafs
 #' @export
 #'
 gen_node <- function(
   n = 20, imin = 20, imax = 70, lmax = 1000,
   amin = -20, amax = 20, shift = 20,
-  width = c(0, 15), scale = 1, shape = "spiral", method = "polygon", seed) {
+  width = c(0, 15), scale = 1, shape = "spiral", method = "polygon", seed, ...) {
 
   # set seed if needed
   if (!missing(seed)) set.seed(seed)

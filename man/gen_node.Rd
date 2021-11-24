@@ -16,7 +16,8 @@ gen_node(
   scale = 1,
   shape = "spiral",
   method = "polygon",
-  seed
+  seed,
+  ...
 )
 }
 \arguments{
@@ -47,6 +48,8 @@ argument. "polygon" builds an oriented polygon. "polygon_lm" builds an
 oriented polygon with decreasing size along path length.}
 
 \item{seed}{value of the random seed, random if missing}
+
+\item{...}{used for parallel mapping}
 }
 \value{
 a dataframe with coordinates of multiple leafs
