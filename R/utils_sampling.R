@@ -90,4 +90,31 @@ sample_disc <- function(x0 = 0, y0 = 0, r = 1, n = 100) {
 
 }
 
+# sample and replace values with missing in a vector
+#' @export
+
+sample_missing <- function(x, y = NULL, p, method = "random") {
+
+  n <- length(x)
+
+  switch(
+    method,
+
+    random = {
+      s <- sample(1:n, size = p * n)
+      x[s] <- NA
+      return(x)
+    },
+
+    along = {
+      #y <- scales::rescale(y, to = c(1, n))
+      s <- truncnorm::rtruncnorm(
+        n = p * n, a = 0, b = n,
+        mean = mean(y), sd = sd(y))
+      #s <- scales::rescale(s, to = c(1, n))
+      x[s] <- NA
+      return(x)
+    }
+  )
+}
 
