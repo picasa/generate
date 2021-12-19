@@ -50,6 +50,98 @@ read_dem <- function(coord, buffer = 1000, dep, source="db_alti"){
 
 }
 
+# processing ####
+
+filter_ridge_length <- function(
+  data,
+  length_n = 10,    # length of ridge segments to be filtered (cells)
+  length_x = 5/100, # proportion of ridge length to be filtered (%)
+  dist_y = 0.95     # view distance to be filtered
+) {
+
+  # filter for ridge elements shorter than a threshold (cell number)
+  data_cell <- data %>% dplyr::ungroup() %>% dplyr::arrange(y,x) %>%
+    dplyr::mutate(zl = cumsum(is.na(zn))) %>%
+    dplyr::group_by(zl) %>% dplyr::mutate(zl_n = dplyr::n()) %>% dplyr::ungroup() %>%
+    dplyr::mutate(zn = dplyr::if_else(zl_n <= length_n, NA_real_, zn))
+
+  # filter for ridge lines with a low contribution
+  data_line <- data %>%
+    dplyr::group_by(y_rank, y_dist) %>%
+    dplyr::summarise(xp = sum(!is.na(zn)) / dplyr::n()) %>%
+    dplyr::filter(xp < length_x, y_dist > dist_y)
+
+  data_filter <- data_cell %>% dplyr::anti_join(data_line)
+
+  return(data_filter)
+
+}
+
+# filter ridgeline dataframe on line slope
+#' @export
+
+filter_ridge_slope <- function(
+  data,
+  size = 3    # size of window used to compute the slope rolling average (cells)
+) {
+
+  data_filter <- data %>%
+    dplyr::group_by(y_rank) %>%
+    dplyr::mutate(
+      z_slope = abs(
+        (zn - dplyr::lag(zn, default = 0)) / (xn - dplyr::lag(xn, default = 0))
+        ),
+      z_slope = RcppRoll::roll_mean(z_slope, n = size, fill = NA_real_),
+      zn = dplyr::if_else(z_slope == 0, NA_real_, zn)
+    ) %>% dplyr::ungroup()
+
+
+  return(data_filter)
+
+}
+
+
+# filter ridgeline dataframe as a function of rank index
+#' @export
+
+filter_ridge_rank <- function(data, prop, method = "grid") {
+
+  switch(
+    method,
+
+    random = {
+      dplyr::inner_join(
+        data,
+        data %>% dplyr::distinct(y_rank) %>%
+          dplyr::slice_sample(prop = prop)
+      )
+    },
+
+    grid = {
+      dplyr::inner_join(
+        data,
+        data %>% dplyr::distinct(y_rank) %>%
+          dplyr::slice(
+            seq(1, dplyr::n(), len = prop * dplyr::n()) %>%
+              as.integer()
+          )
+      )
+    },
+
+    strip = {
+      dplyr::inner_join(
+        data,
+        data %>% dplyr::distinct(y_rank) %>%
+          dplyr::slice(
+            sample(1:n(), prop * n()) %>%
+              purrr::map(~ .x:(.x + 40)) %>% purrr::flatten_int()
+          )
+      )
+    }
+  )
+}
+
+
 # rendering ####
 
 # iterate to create geom_sf layers as a function of a dataframe
@@ -258,79 +350,5 @@ render_ridge <- function(
 
 # filter ridgeline dataframe on line length
 #' @export
-
-filter_ridge_length <- function(
-  data,
-  length_n = 10,    # length of ridge segments to be filtered (cells)
-  length_x = 5/100, # proportion of ridge length to be filtered (%)
-  dist_y = 0.95     # view distance to be filtered
-  ) {
-
-  # filter for ridge elements shorter than a threshold (cell number)
-  data_cell <- data %>% ungroup %>% arrange(y,x) %>%
-    dplyr::mutate(zl = cumsum(is.na(zn))) %>%
-    dplyr::group_by(zl) %>% dplyr::mutate(zl_n = dplyr::n()) %>% dplyr::ungroup() %>%
-    dplyr::mutate(zn = dplyr::if_else(zl_n <= length_n, NA_real_, zn))
-
-  # filter for ridge lines with a low contribution
-  data_line <- data %>%
-    dplyr::group_by(y_rank, y_dist) %>%
-    dplyr::summarise(xp = sum(!is.na(zn)) / dplyr::n()) %>%
-    dplyr::filter(xp < length_x, y_dist > dist_y)
-
-  data_filter <- data_cell %>% dplyr::anti_join(data_line)
-
-  return(data_filter)
-
-}
-
-# filter ridgeline dataframe on line slope
-#' @export
-
-filter_ridge_slope <- function(
-  data,
-  size = 3    # size of window used to compute the slope rolling average (cells)
-) {
-
-  data_filter <- data %>%
-    group_by(y_rank) %>%
-    mutate(
-      z_slope = abs((zn - lag(zn, default = 0)) / (xn - lag(xn, default = 0))),
-      z_slope = RcppRoll::roll_mean(z_slope, n = size, fill = NA_real_),
-      zn = if_else(z_slope == 0, NA_real_, zn)
-    ) %>% ungroup()
-
-
-  return(data_filter)
-
-}
-
-
-# down-sample a ridgeline dataframe with various methods
-#' @export
-
-sample_ridge <- function(data, prop, method = "grid") {
-
-  switch(
-    method,
-
-    random = {
-      inner_join(
-        data,
-        data %>% distinct(y_rank) %>%
-          slice_sample(prop = prop))
-    },
-
-    grid = {
-      inner_join(
-        data,
-        data %>% distinct(y_rank) %>%
-          slice(seq(1, n() , len = prop * n()) %>% as.integer()))
-    }
-  )
-}
-
-
-
 
 

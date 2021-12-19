@@ -110,7 +110,7 @@ sample_missing <- function(x, y = NULL, p, method = "random") {
       #y <- scales::rescale(y, to = c(1, n))
       s <- truncnorm::rtruncnorm(
         n = p * n, a = 0, b = n,
-        mean = mean(y), sd = sd(y))
+        mean = mean(y), sd = stats::sd(y))
       #s <- scales::rescale(s, to = c(1, n))
       x[s] <- NA
       return(x)
