@@ -316,14 +316,15 @@ render_ridge <- function(
     dplyr::slice(seq(1, (dplyr::n() - n_drop), len = n_ridges) %>% as.integer()) %>%
     dplyr::mutate(
       y_rank = rank(y),
-      y_dist = scales::rescale(y, to=c(0,1)),
+      y_dist = scales::rescale(y, to = c(0,1)),
       dz = 1:dplyr::n() * z_shift
     )
 
   # compute z shift as a function of ridge index
   data_shift <- data %>%
     dplyr::inner_join(data_index) %>%
-    dplyr::mutate(xn = x - min(x)) %>%
+    dplyr::group_by(y) %>%
+    dplyr::mutate(xn = x - min(x), x_rank = rank(x)) %>% dplyr::ungroup() %>%
     dplyr::arrange(y) %>% dplyr::group_by(x) %>%
     dplyr::mutate(
       zs = z + dz,
@@ -337,7 +338,8 @@ render_ridge <- function(
   # remove points hidden by foreground ridges :
   # distance between successive y for each x is less than a threshold (default 0)
   data_ridge <- data_shift %>%
-    dplyr::mutate(dplyr::across(zs, .fns = list_distance)) %>% dplyr::ungroup() %>%
+    dplyr::mutate(dplyr::across(zs, .fns = list_distance)) %>%
+    dplyr::ungroup() %>%
     dplyr::mutate(
       zn = dplyr::case_when(
         dplyr::if_any(tidyselect::all_of(list_col), ~ . < z_threshold) ~ NA_real_,
