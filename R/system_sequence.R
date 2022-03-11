@@ -195,7 +195,8 @@ gen_node <- function(
     dplyr::left_join(
       data %>%
         dplyr::distinct(id, c_l) %>% dplyr::arrange(-c_l) %>%
-        dplyr::mutate(shift = 0:(dplyr::n() - 1) * shift)
+        dplyr::mutate(shift = 0:(dplyr::n() - 1) * shift),
+      by = c("id", "c_l")
     ) %>%
     dplyr::mutate(dplyr::across(c(y, yend), ~ . + shift))
 

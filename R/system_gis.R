@@ -1,8 +1,14 @@
 # input ####
 
-# read and merge DEM tiles from IGN DBALTI or RGEALTI as a function of WGS84 coordinates
+#' Read and merge DEM tiles from IGN DBALTI or RGEALTI as a function of WGS84 coordinates
+#' @param coord latitude and longitude of centroid (named numeric vector, decimal degrees)
+#' @param buffer circular buffer around the centroid (numeric, m)
+#' @param dep departement code number used to index DEM data (numeric)
+#' @param source DEM database to be used. "db_alti" is a national
+#'  database at 25x25m resolution. "rge_alti" is a departement-level database at 5x5m
+#'  resolution, with 1 - 20m source data. (character)
 #' @export
-
+#'
 read_dem <- function(coord, buffer = 1000, dep, source="db_alti"){
 
   # define map location in IGN CRS
@@ -52,11 +58,18 @@ read_dem <- function(coord, buffer = 1000, dep, source="db_alti"){
 
 # processing ####
 
+#' Filter ridgeline dataframe as a function of segment length
+#' @param data dataframe of computed ridgelines from render_ridge()
+#' @param length_n length of ridge segments to be filtered (integer, cells)
+#' @param length_x relative length used as threshold for removal of ridgeline (numeric, 0-1)
+#' @param dist_y relative distance to remove ridgelines (numeric, 0-1)
+#' @export
+#'
 filter_ridge_length <- function(
   data,
-  length_n = 10,    # length of ridge segments to be filtered (cells)
-  length_x = 5/100, # proportion of ridge length to be filtered (%)
-  dist_y = 0.95     # view distance to be filtered
+  length_n = 10,
+  length_x = 5/100,
+  dist_y = 0.95
 ) {
 
   # filter for ridge elements shorter than a threshold (cell number)
@@ -77,12 +90,14 @@ filter_ridge_length <- function(
 
 }
 
-# filter ridgeline dataframe on line slope
+#' Filter ridgeline dataframe as a function of local slope
+#' @param data dataframe of computed ridgelines from render_ridge()
+#' @param size size of window used to compute the slope rolling average (integer, cells)
 #' @export
 
 filter_ridge_slope <- function(
   data,
-  size = 3    # size of window used to compute the slope rolling average (cells)
+  size = 3
 ) {
 
   data_filter <- data %>%
@@ -101,10 +116,16 @@ filter_ridge_slope <- function(
 }
 
 
-# filter ridgeline dataframe as a function of rank index
+#' Filter ridgeline dataframe as a function of rank index
+#' @param data dataframe of computed ridgelines from render_ridge()
+#' @param p proportion of ridgeline to remove
+#' @param method method used to remove ridges.
+#' * "random" randomly removes a proportion of ridges.
+#' * "grid" uniformly sample a proportion of ridges.
+#' * "strip" remove a proportion of strips of ridges with a low elevation variance.
 #' @export
 
-filter_ridge_rank <- function(data, prop, method = "grid") {
+filter_ridge_rank <- function(data, p, method = "grid") {
 
   switch(
     method,
@@ -113,7 +134,7 @@ filter_ridge_rank <- function(data, prop, method = "grid") {
       dplyr::inner_join(
         data,
         data %>% dplyr::distinct(y_rank) %>%
-          dplyr::slice_sample(prop = prop)
+          dplyr::slice_sample(prop = p)
       )
     },
 
@@ -122,7 +143,7 @@ filter_ridge_rank <- function(data, prop, method = "grid") {
         data,
         data %>% dplyr::distinct(y_rank) %>%
           dplyr::slice(
-            seq(1, dplyr::n(), len = prop * dplyr::n()) %>%
+            seq(1, dplyr::n(), len = p * dplyr::n()) %>%
               as.integer()
           )
       )
@@ -133,7 +154,7 @@ filter_ridge_rank <- function(data, prop, method = "grid") {
         data,
         data %>% dplyr::distinct(y_rank) %>%
           dplyr::slice(
-            sample(1:n(), prop * n()) %>%
+            sample(1:n(), p * n()) %>%
               purrr::map(~ .x:(.x + 40)) %>% purrr::flatten_int()
           )
       )
@@ -144,7 +165,12 @@ filter_ridge_rank <- function(data, prop, method = "grid") {
 
 # rendering ####
 
-# iterate to create geom_sf layers as a function of a dataframe
+#' Iterate to create geom_sf layers as a function of a dataframe
+#' @param data sf multipolygon object for shore, used to compute waterlines.
+#' @param n number of waterlines.
+#' @param d0,r  buffer and rate of buffer growth between water lines.
+#' @param color,scale color and scaling of plotted lines.
+#' @param ... used for pmap compatibility
 #' @export
 
 geom_waterline <- function(
@@ -168,7 +194,7 @@ geom_waterline <- function(
 }
 
 
-# render a DEM as contour plot with waterlines
+# Render a DEM as contour plot with waterlines
 #' @export
 
 render_contour <- function(
@@ -282,29 +308,35 @@ render_contour <- function(
 
 }
 
-# render a DEM with elevation as a function of longitude, grouped per latitude (ridge plot)
-
-# x, longitude (m)
-# y, latitude (m)
-# z, altitude (m)
-# xn, relative longitude (m)
-# y_rank, relative latitude
-# y_dist, relative latitude [0,1]
-# dz, shift in altitude (m)
-# zs, shifted altitude (m)
-# z_rank, relative altitude (ranked per longitude)
-# zn, shifted altitude, after occlusion (m)
-# zl_n, length of the current ridge (cell)
+#' Render a DEM with elevation as a function of longitude, grouped per latitude (ridge plot)
+#' @param data dataframe from a digital elevation model (x,y,z)
+#' @param n_ridges number of ridges uniformly selected, value 0 select all ridges in dataset  (integer)
+#' @param n_drop number of ridges to drop in distance (integer)
+#' @param n_lag depth of search for line removal algorithm (number of successive ridges)
+#' @param z_shift distance on y-axis used to shift successive ridges (m)
+#' @param z_threshold minimal distance threshold to remove points between successive ridges (m)
+#' @return a dataframe suitable for plotting in two dimensions :
+#' * x, longitude (m)
+#' * y, latitude (m)
+#' * z, altitude (m)
+#' * xn, relative longitude (m)
+#' * y_rank, relative latitude
+#' * y_dist, relative latitude (0,1)
+#' * dz, shift in altitude (m)
+#' * zs, shifted altitude (m)
+#' * z_rank, relative altitude (ranked per longitude)
+#' * zn, shifted altitude, after occlusion (m)
+#' * zl_n, length of the current ridge (cell)
 
 #' @export
 
 render_ridge <- function(
   data,
-  n_ridges = 200,     # number of ridges
-  n_drop = 0,         # number of ridges to drop in distance
-  n_lag = 100,        # number of neighbors used to remove points of current ridge
-  z_shift = 15,       # distance to shift successive ridges (m)
-  z_threshold = 10   # distance threshold to remove points between successive ridges (m)
+  n_ridges = 200,
+  n_drop = 0,
+  n_lag = 100,
+  z_shift = 15,
+  z_threshold = 10
   ){
 
   # set n_ridges to max number in data if parameter is 0
