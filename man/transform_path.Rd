@@ -13,10 +13,13 @@ transform_path(data, scale = 1, width = c(0, 10), method = "polygon")
 
 \item{width}{a numeric vector for x and y shifts of the path}
 
-\item{method}{method used to render the path. "spline" fits a b-spline to
-smooth the initial path. "path" shift the initial path according to \code{width}
-argument. "polygon" builds an oriented polygon. "polygon_lm" builds an
-oriented polygon with decreasing size along path length.}
+\item{method}{method used to render the path.
+\itemize{
+\item "spline" fits a b-spline to smooth the initial path.
+\item "path" shift the initial path according to \code{width} argument.
+\item "polygon" builds an oriented polygon from the shifted path.
+\item "polygon_lm" builds an oriented polygon with decreasing size along path length.
+}}
 }
 \value{
 a dataframe with new x and y coordinates

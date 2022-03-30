@@ -2,15 +2,22 @@
 # TODO write functions for space-filling designs in 2D: gaussian, uniform, LHS, noise.
 
 # 1D ####
-
-# 2D ####
-# draw n points uniformly in in x and y
 # https://en.wikipedia.org/wiki/Low-discrepancy_sequence
 
+# 2D ####
+
+#' Sample n points uniformly in a square
+#' @param n number of points
+#' @param method method used to sample the space
+#' * "uniform": basic sampling based on independent uniform distributions for each dimensions.
+#' * "sobol": sampling using uniform Sobol low discrepancy sequences from `randtoolbox::sobol()`.
+#' @param xlim,ylim x and y limits, default to (-1,1)
+#' @param seed seed used for the sobol method.
+#' @return a dataframe with n, x, and y columns
 #' @export
 #'
 layout_square <- function(
-  n = 7, method="uniform",
+  n = 7, method = "uniform",
   xlim = c(-1,1), ylim = c(-1,1),
   seed) {
 
@@ -37,12 +44,18 @@ layout_square <- function(
 
 }
 
-# draw n points in a unit circle
-# https://mathworld.wolfram.com/DiskPointPicking.html
+#' Sample n points in an elliptic area
+#' @description Point are sampled from uniform distribution in polar coordinates. The point set is then transformed to cartesian coordinates, scaled, and rotated.
+#' @param n number of points
+#' @param x0,y0 coordinates of the center of the sampling area
+#' @param r radius of the sampling area
+#' @param a rotation angle of the point set (radians)
+#' @param scale_x scaling coefficient applied on the x axis
+#' @return a dataframe with n, x, and y columns
 #' @export
 
 layout_ellipse <- function(
-  x0 = 0, y0 = 0, r = 1, a = -pi/6, n = 7, scale_x = 0.5
+    n = 7, x0 = 0, y0 = 0, r = 1, a = -pi/6, scale_x = 0.5
   ) {
   r = sqrt(stats::runif(n, 0, r))
   theta = stats::runif(n, 0, 2*pi)
@@ -61,10 +74,14 @@ layout_ellipse <- function(
   return(layout)
 }
 
-# sample n point regularly spaced on a circle
+#' Sample n point regularly spaced on a circle
+#' @param n number of points
+#' @param x0,y0 coordinates of the center of the sampled circle
+#' @param r radius of the sampled circle
+#' @return a dataframe with n, x, and y columns
 #' @export
 
-sample_perimeter <- function(x0 = 0, y0 = 0, r = 1, n = 7) {
+sample_perimeter <- function(n = 7, x0 = 0, y0 = 0, r = 1) {
 
   tibble::tibble(
     n = 0:(n-1),
@@ -75,22 +92,32 @@ sample_perimeter <- function(x0 = 0, y0 = 0, r = 1, n = 7) {
 
 }
 
-# sample n points regularly on a disc
+#' Sample n points evenly distributed on a disc
+#' @description Points are arranged using Fermat's spiral ([Vogel, 1979](https://doi.org/10.1016%2F0025-5564%2879%2990080-4))
+#' @param n number of points
+#' @param x0,y0 coordinates of the center of the sampled circle
+#' @param r radius of the sampled circle
+#' @param a angle in polar coordinates (radians)
+#' @return a dataframe with n, x, and y columns
 #' @export
 
-sample_disc <- function(x0 = 0, y0 = 0, r = 1, n = 100) {
+sample_disc <- function(n = 100, x0 = 0, y0 = 0, r = 1, a = pi * (1 + sqrt(5))) {
 
   tibble::tibble(
     n = 0:(n-1),
     r = scales::rescale(sqrt(n/100), to = c(0,r)),
-    theta = pi * (1 + sqrt(5)) * n,
+    theta = a * n,
     x = x0 + r * cos(theta),
     y = y0 + r * sin(theta)
   )
 
 }
 
-# sample and replace values with missing in a vector
+#' Sample and replace values with NA in a vector
+#' @param x,y input vectors
+#' @param p proportion of missing values (0,1)
+#' @param method method from sampling values
+#' @return a vector with missing values.
 #' @export
 
 sample_missing <- function(x, y = NULL, p, method = "random") {
@@ -117,4 +144,21 @@ sample_missing <- function(x, y = NULL, p, method = "random") {
     }
   )
 }
+
+#' Sample equidistant points on the perimeter of l concentric circles of r radius
+#' @param x0,y0 coordinates of the center of the concentric circles
+#' @param l number of concentric circles
+#' @param r radius of the outermost circle
+#' @param jitter amount of jitter to apply to sampled points
+#' @export
+#'
+sample_vessel <- function(x0 = 0, y0 = 0, l = 5, r = 1/100, jitter = 1/500) {
+  tibble::tibble(l = 1:l) %>%
+    dplyr::mutate(n = l * 10, r = seq(1/40, r * dplyr::n(), len = dplyr::n())) %>%
+    dplyr::mutate(data = purrr::map2(n, r, ~ sample_perimeter(n = ..1, r = ..2))) %>%
+    dplyr::select(l, data) %>% tidyr::unnest(data) %>%
+    dplyr::mutate(x = x + x0, y = y + y0) %>%
+    dplyr::mutate(dplyr::across(x:y, ~ jitter(., a = jitter)))
+}
+
 

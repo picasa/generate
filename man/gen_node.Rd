@@ -29,7 +29,7 @@ value (int)}
 \item{lmax}{maximum value for simulated path length}
 
 \item{amin, amax}{bounds of uniform distribution of the angle between path
-segments (degreee)}
+segments (degree)}
 
 \item{shift}{vertical shift between paths}
 
@@ -38,14 +38,20 @@ segments (degreee)}
 \item{scale}{scaling value applied on the complete node}
 
 \item{shape}{method for the calculation of successive angles between leaf
-elements (character). "spiral" accumulates angle in the same direction.
-"wave" accumulates angle depending on the parity of the value in the
-sequence.}
+elements (character).
+\itemize{
+\item "spiral" accumulates angle in the same direction.
+\item "wave" accumulates angle depending on the parity of the value in the
+sequence.
+}}
 
-\item{method}{method used to render the path. "spline" fits a b-spline to
-smooth the initial path. "path" shift the initial path according to \code{width}
-argument. "polygon" builds an oriented polygon. "polygon_lm" builds an
-oriented polygon with decreasing size along path length.}
+\item{method}{method used to render the path.
+\itemize{
+\item "spline" fits a b-spline to smooth the initial path.
+\item "path" shift the initial path according to \code{width} argument.
+\item "polygon" builds an oriented polygon from the shifted path.
+\item "polygon_lm" builds an oriented polygon with decreasing size along path length.
+}}
 
 \item{seed}{value of the random seed, random if missing}
 

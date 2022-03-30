@@ -17,9 +17,12 @@ render_node(
 \item{data}{a dataframe of objects coordinates produced by \code{gen_node()}
 function}
 
-\item{method}{method used to render objects. "spline" render paths using
-B-splines. "segment" render leaf as a polygon with border and visible
-segments. "polygon" render closed path using \code{geom_shape()}.}
+\item{method}{method used to render objects.
+\itemize{
+\item "spline" render paths using B-splines.
+\item "segment" render leaf as a polygon with border and visible segments.
+\item "polygon" render closed path using \code{geom_shape()}.
+}}
 
 \item{radius}{radius of polygon smoothing}
 

@@ -7,7 +7,7 @@
 filter_ridge_length(data, length_n = 10, length_x = 5/100, dist_y = 0.95)
 }
 \arguments{
-\item{data}{dataframe of computed ridgelines from render_ridge()}
+\item{data}{dataframe of computed ridgelines from \code{render_ridge()}}
 
 \item{length_n}{length of ridge segments to be filtered (integer, cells)}
 

@@ -1,12 +1,13 @@
 # input ####
 
 #' Read and merge DEM tiles from IGN DBALTI or RGEALTI as a function of WGS84 coordinates
-#' @param coord latitude and longitude of centroid (named numeric vector, decimal degrees)
-#' @param buffer circular buffer around the centroid (numeric, m)
-#' @param dep departement code number used to index DEM data (numeric)
-#' @param source DEM database to be used. "db_alti" is a national
-#'  database at 25x25m resolution. "rge_alti" is a departement-level database at 5x5m
-#'  resolution, with 1 - 20m source data. (character)
+#' @param coord latitude and longitude of centroid (named numeric vector, decimal degrees).
+#' @param buffer circular buffer around the centroid (numeric, m).
+#' @param dep departement code number used to index DEM data (numeric).
+#' @param source DEM database to be used (character).
+#' * "db_alti" is a national database at 25x25m resolution.
+#' * "rge_alti" is a departement-level database at 5x5m resolution, with 1 - 20m source data.
+#' @return a digital elevation model as a spatial data object (stars)
 #' @export
 #'
 read_dem <- function(coord, buffer = 1000, dep, source="db_alti"){
@@ -59,7 +60,7 @@ read_dem <- function(coord, buffer = 1000, dep, source="db_alti"){
 # processing ####
 
 #' Filter ridgeline dataframe as a function of segment length
-#' @param data dataframe of computed ridgelines from render_ridge()
+#' @param data dataframe of computed ridgelines from `render_ridge()`
 #' @param length_n length of ridge segments to be filtered (integer, cells)
 #' @param length_x relative length used as threshold for removal of ridgeline (numeric, 0-1)
 #' @param dist_y relative distance to remove ridgelines (numeric, 0-1)
@@ -91,7 +92,7 @@ filter_ridge_length <- function(
 }
 
 #' Filter ridgeline dataframe as a function of local slope
-#' @param data dataframe of computed ridgelines from render_ridge()
+#' @param data dataframe of computed ridgelines from `render_ridge()`
 #' @param size size of window used to compute the slope rolling average (integer, cells)
 #' @export
 
@@ -117,7 +118,7 @@ filter_ridge_slope <- function(
 
 
 #' Filter ridgeline dataframe as a function of rank index
-#' @param data dataframe of computed ridgelines from render_ridge()
+#' @param data dataframe of computed ridgelines from `render_ridge()`
 #' @param p proportion of ridgeline to remove
 #' @param method method used to remove ridges.
 #' * "random" randomly removes a proportion of ridges.
@@ -194,7 +195,18 @@ geom_waterline <- function(
 }
 
 
-# Render a DEM as contour plot with waterlines
+#' Render a DEM as contour plot with waterlines
+#' @param data a digital elevation model as a spatial data object (stars) from `read_dem()`
+#' @param coord geographical coordinates of the centroid (named vector with lon, lat)
+#' @param area_min minimal area for polygons to be considered (m^2)
+#' @param length_min minimal length for contour lines to be considered (m)
+#' @param alt_min,alt_max,alt_contour minimal, maximal, and elevation step used to define contour lines (m)
+#' @param n_water number of waterlines
+#' @param scale scaling coefficient of contour and water lines
+#' @param outline if TRUE render and plot only shorelines (boolean)
+#' @param layers if TRUE return all layers in different objects (boolean)
+#' @param ... used for pmap compatibility
+#' @return a ggplot object
 #' @export
 
 render_contour <- function(

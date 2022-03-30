@@ -1,6 +1,11 @@
 # simulation ####
 
-# Lotka-Volterra
+#' Simulator for the Lotka-Volterra dynamical system
+#' @description Describes the [dynamics](https://en.wikipedia.org/wiki/Lotka%E2%80%93Volterra_equations) of biological systems in which two species interact.
+#' @param parameters α, β, γ, δ are positive real parameters describing the interaction of the two species. (numeric vector).
+#' @param start_coords initial conditions (numeric vector)
+#' @param t_max,t_step end time and step of the simulation (numeric).
+#' @return a dataframe with time, x, and y columns
 #' @export
 #'
 simulate_lv <- function(
@@ -25,11 +30,14 @@ simulate_lv <- function(
     as.data.frame() %>% tibble::tibble()
 }
 
-# http://paulbourke.net/fractals/duffing/
-# a, "amount of damping",
-# b, "amplitude of the periodic driving force",
-# w, "angular frequency of the periodic driving force."
+#
 
+#' Simulator for the Duffing dynamical system
+#' @description Describes certain damped and driven oscillators. Coded from http://paulbourke.net/fractals/duffing/.
+#' @param parameters a,b,c describe the amount of damping, the amplitude of the periodic driving force, and the angular frequency of the periodic driving force.
+#' @param start_coords initial conditions (numeric vector)
+#' @param t_max,t_step end time and step of the simulation (numeric).
+#' @return a dataframe with time, x, and y columns
 #' @export
 #'
 simulate_duffing <- function(
@@ -55,6 +63,11 @@ simulate_duffing <- function(
     dplyr::mutate(iteration = dplyr::row_number()) %>% tibble::tibble()
 }
 
+#' Simulator for the Lorenz dynamical system
+#' @description Describes a simplified mathematical model for atmospheric convection. The parameters are set so that the system exhibits a chaotic behavior (σ = 10, ρ = 28, β = 8/3).
+#' @param start_coords initial conditions (numeric vector)
+#' @param t_max,t_step end time and step of the simulation (numeric).
+#' @return a dataframe with time, x, and y columns
 #' @export
 simulate_lorenz <- function(
   start_coords = c(x = 1, y = 1, z = 1),
@@ -65,8 +78,8 @@ simulate_lorenz <- function(
     y = start_coords,
     times = seq(0, t_max, by = t_step),
     parms = list(
-      rho = 28,
       sigma = 10,
+      rho = 28,
       beta = 8/3
     ),
     func = function(time, state, params) {
@@ -83,6 +96,14 @@ simulate_lorenz <- function(
     dplyr::mutate(iteration = dplyr::row_number()) %>% tibble::tibble()
 }
 
+#' Simulate discrete time quadratic maps
+#' @description Based on the original article by J.C. Sprott (Sprott, J. C. "Automatic Generation of Strange Attractors." Comput. & Graphics 17, 325-332, 1993c). The map used formalized as
+#' * xn+1 = a0 + a1 xn + a2 xn2 + a3 xn yn + a4 yn + a5 yn2
+#' * yn+1 = a6 + a7 xn + a8 xn2 + a9 xn yn + a10 yn + a11 yn2
+#' @param parameters a numeric vector of 12 values
+#' @param start_coords initial conditions (numeric vector)
+#' @param iterations number of iterations (integer)
+#' @return a dataframe with time, x, and y columns
 #' @export
 simulate_quadratic <- function(
   parameters,
@@ -108,11 +129,15 @@ simulate_quadratic <- function(
 }
 
 
-# simulate ODE system with initial conditions from a LHS design
-# TODO : code f parameter to handle different ODE
-
+#' Simulate an ODE system with initial conditions sampled from a LHS design
+#' @param p parameter vector for the ODE system
+#' @param n number of particles to be simulated
+#' @param t,s end time and step of the simulation (numeric).
+#' @param x0,y0 scaling parameters for the initial conditions
 #' @export
-gen_field <- function(p, n, t, s = 1/100, x0 = c(-1,1), y0 = c(0.5,1), f = NULL) {
+gen_field <- function(p, n, t, s = 1/100, x0 = c(-1,1), y0 = c(0.5,1)) {
+
+  # TODO : code f parameter to handle different ODE
 
   # set up a LHS design for initial conditions
   design_initial <- lhs::randomLHS(n = n, k=2) %>%
@@ -133,16 +158,3 @@ gen_field <- function(p, n, t, s = 1/100, x0 = c(-1,1), y0 = c(0.5,1), f = NULL)
   return(data %>% tidyr::unnest(trace))
 
 }
-
-# sample equidistant points on the perimeter of l concentric circles of r radius
-#' @export
-#'
-gen_vessel <- function(x0 = 0, y0 = 0, l = 5, r = 1/100, jitter = 1/500) {
-  tibble::tibble(l = 1:l) %>%
-    dplyr::mutate(n = l * 10, r = seq(1/40, r * dplyr::n(), len = dplyr::n())) %>%
-    dplyr::mutate(data = purrr::map2(n, r, ~ sample_perimeter(n = ..1, r = ..2))) %>%
-    dplyr::select(l, data) %>% tidyr::unnest(data) %>%
-    dplyr::mutate(x = x + x0, y = y + y0) %>%
-    dplyr::mutate(dplyr::across(x:y, ~ jitter(., a = jitter)))
-}
-

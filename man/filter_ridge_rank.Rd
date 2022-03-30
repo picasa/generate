@@ -7,7 +7,7 @@
 filter_ridge_rank(data, p, method = "grid")
 }
 \arguments{
-\item{data}{dataframe of computed ridgelines from render_ridge()}
+\item{data}{dataframe of computed ridgelines from \code{render_ridge()}}
 
 \item{p}{proportion of ridgeline to remove}
 

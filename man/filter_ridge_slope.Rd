@@ -7,7 +7,7 @@
 filter_ridge_slope(data, size = 3)
 }
 \arguments{
-\item{data}{dataframe of computed ridgelines from render_ridge()}
+\item{data}{dataframe of computed ridgelines from \code{render_ridge()}}
 
 \item{size}{size of window used to compute the slope rolling average (integer, cells)}
 }

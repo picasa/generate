@@ -1,6 +1,19 @@
 
-# render layouts with different graphs (relative neighborhood, knn) and aesthetics
-# https://en.wikipedia.org/wiki/Relative_neighborhood_graph
+#' Render point layouts with different graphs and aesthetics
+#' @param data a dataframe of 2D coordinates
+#' @param vars names of the coordinates to be used (unquoted vector)
+#' @param graph method used to compute the graph object from the point layout.
+#' * "rng": [relative neighborhood graph](https://en.wikipedia.org/wiki/Relative_neighborhood_graph),
+#' roughly defines the human perception of the shape of the point set.
+#' * "knn": [nearest neighbor graph](https://en.wikipedia.org/wiki/Nearest_neighbor_graph), connect k adjacent points together.
+#' @param k number of neighbors to account to in both methods. NA is used to calculate the true relative neighborhood graph but increase to compute time.
+#' @param aes aesthetic of the rendered plot.
+#' * "default": point and lines.
+#' * "line": only lines.
+#' * "bezier": Bezier curves.
+#' @param color,width,alpha fixed aesthetic parameters for the ggplot object
+#' @param coord ggplot2 coordinate system object passed to ggplot
+#' @return a ggplot object
 #' @export
 
 render_graph <- function(

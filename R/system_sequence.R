@@ -58,10 +58,11 @@ transform_vector <- function(.x, .y) {
 #' @param data a dataframe with x and y coordinates
 #' @param scale scaling factor of the output
 #' @param width a numeric vector for x and y shifts of the path
-#' @param method method used to render the path. "spline" fits a b-spline to
-#'   smooth the initial path. "path" shift the initial path according to `width`
-#'   argument. "polygon" builds an oriented polygon. "polygon_lm" builds an
-#'   oriented polygon with decreasing size along path length.
+#' @param method method used to render the path.
+#' * "spline" fits a b-spline to smooth the initial path.
+#' * "path" shift the initial path according to `width` argument.
+#' * "polygon" builds an oriented polygon from the shifted path.
+#' * "polygon_lm" builds an oriented polygon with decreasing size along path length.
 #' @return a dataframe with new x and y coordinates
 #' @export
 #'
@@ -118,9 +119,9 @@ transform_path <- function(data, scale = 1, width = c(0,10), method = "polygon")
 #' @param a value of the angle between leaf segments (degrees)
 #' @param x0,y0 coordinates of the first leaf segments
 #' @param shape method for the calculation of successive angles between leaf
-#'   segments (character). "spiral" accumulates angle in the same direction.
-#'   "wave" accumulates angle depending on the parity of the value in the
-#'   sequence.
+#'   segments (character).
+#'   * "spiral" accumulates angle in the same direction.
+#'   * "wave" accumulates angle depending on the parity of the value in the sequence.
 #' @return a dataframe with coordinates of leaf segments
 #' @export
 #'
@@ -153,19 +154,21 @@ gen_leaf <- function(i, a = 20, x0 = 0, y0 = 0, shape = "spiral") {
 #' @param imin,imax bounds of uniform distribution of the sequence starting
 #'   value (int)
 #' @param amin,amax bounds of uniform distribution of the angle between path
-#'   segments (degreee)
+#'   segments (degree)
 #' @param lmax maximum value for simulated path length
 #' @param shift vertical shift between paths
 #' @param width a numeric vector for x and y shifts of the individual paths
 #' @param scale scaling value applied on the complete node
 #' @param shape method for the calculation of successive angles between leaf
-#'   elements (character). "spiral" accumulates angle in the same direction.
-#'   "wave" accumulates angle depending on the parity of the value in the
+#'   elements (character).
+#'    * "spiral" accumulates angle in the same direction.
+#'    * "wave" accumulates angle depending on the parity of the value in the
 #'   sequence.
-#' @param method method used to render the path. "spline" fits a b-spline to
-#'   smooth the initial path. "path" shift the initial path according to `width`
-#'   argument. "polygon" builds an oriented polygon. "polygon_lm" builds an
-#'   oriented polygon with decreasing size along path length.
+#' @param method method used to render the path.
+#' * "spline" fits a b-spline to smooth the initial path.
+#' * "path" shift the initial path according to `width` argument.
+#' * "polygon" builds an oriented polygon from the shifted path.
+#' * "polygon_lm" builds an oriented polygon with decreasing size along path length.
 #' @param seed value of the random seed, random if missing
 #' @param ... used for parallel mapping
 #' @return a dataframe with coordinates of multiple leafs
@@ -187,8 +190,7 @@ gen_node <- function(
       path = purrr::map2(i, a, ~ gen_leaf(i = .x, a = .y, shape = shape)),
       c_n = purrr::map_int(path, ~ nrow(.)),
       c_l = purrr::map_dbl(path, ~ sum(.$length))
-    ) %>%
-    dplyr::filter(c_l < lmax, a != 0) %>% tidyr::unnest(path)
+    ) %>% tidyr::unnest(path)
 
   # shift organs vertically
   layout <- data %>%
@@ -208,7 +210,8 @@ gen_node <- function(
         data,
         ~ transform_path(., scale = scale, width = width, method = method)
         )) %>%
-    dplyr::select(-data) %>% tidyr::unnest(path)
+    dplyr::select(-data) %>% tidyr::unnest(path) %>%
+    dplyr::filter(c_l < lmax, a != 0)
 
   return(layout)
 }
@@ -219,9 +222,10 @@ gen_node <- function(
 #' Render nodes with different aesthetic
 #' @param data a dataframe of objects coordinates produced by `gen_node()`
 #'   function
-#' @param method method used to render objects. "spline" render paths using
-#'   B-splines. "segment" render leaf as a polygon with border and visible
-#'   segments. "polygon" render closed path using `geom_shape()`.
+#' @param method method used to render objects.
+#' * "spline" render paths using B-splines.
+#' * "segment" render leaf as a polygon with border and visible segments.
+#' * "polygon" render closed path using `geom_shape()`.
 #' @param radius radius of polygon smoothing
 #' @param xlim,ylim limits passed to `coord_fixed()`
 #' @param margin margins passed to `theme()`

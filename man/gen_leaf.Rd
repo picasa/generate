@@ -14,9 +14,11 @@ gen_leaf(i, a = 20, x0 = 0, y0 = 0, shape = "spiral")
 \item{x0, y0}{coordinates of the first leaf segments}
 
 \item{shape}{method for the calculation of successive angles between leaf
-segments (character). "spiral" accumulates angle in the same direction.
-"wave" accumulates angle depending on the parity of the value in the
-sequence.}
+segments (character).
+\itemize{
+\item "spiral" accumulates angle in the same direction.
+\item "wave" accumulates angle depending on the parity of the value in the sequence.
+}}
 }
 \value{
 a dataframe with coordinates of leaf segments
