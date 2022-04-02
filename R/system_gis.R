@@ -13,12 +13,14 @@
 read_dem <- function(coord, buffer = 1000, dep, source="db_alti"){
 
   # define map location in IGN CRS
-  location <- data.frame(
-    lon = coord["lon"],
-    lat = coord["lat"]) %>%
-    sf::st_as_sf(coords = c("lon", "lat")) %>%
-    sf::st_set_crs(4326) %>%
-    sf::st_transform(crs = 2154)
+  location <- if (is.vector(coord)) {
+    data.frame(
+      lon = coord["lon"],
+      lat = coord["lat"]) %>%
+      sf::st_as_sf(coords = c("lon", "lat")) %>%
+      sf::st_set_crs(4326) %>%
+      sf::st_transform(crs = 2154)
+  } else coord
 
   # load grid corresponding to selected data source
   switch(
@@ -36,10 +38,14 @@ read_dem <- function(coord, buffer = 1000, dep, source="db_alti"){
     }
   )
 
+  sf::st_agr(grid) = "constant"
+
   # list tile containing requested location plus buffer
   list_tiles <- sf::st_intersection(
     grid,
-    location %>% sf::st_buffer(buffer)) %>% dplyr::pull(NOM_DALLE)
+    location %>% sf::st_buffer(buffer)
+    ) %>%
+    dplyr::pull(NOM_DALLE)
 
   # read corresponding tiles and merge them
   dem_list <- tibble::tibble(
@@ -82,10 +88,10 @@ filter_ridge_length <- function(
   # filter for ridge lines with a low contribution
   data_line <- data %>%
     dplyr::group_by(y_rank, y_dist) %>%
-    dplyr::summarise(xp = sum(!is.na(zn)) / dplyr::n()) %>%
+    dplyr::summarise(xp = sum(!is.na(zn)) / dplyr::n(), .groups = "drop") %>%
     dplyr::filter(xp < length_x, y_dist > dist_y)
 
-  data_filter <- data_cell %>% dplyr::anti_join(data_line)
+  data_filter <- dplyr::anti_join(data_cell, data_line, by = c("y_rank", "y_dist"))
 
   return(data_filter)
 
@@ -123,7 +129,7 @@ filter_ridge_slope <- function(
 #' @param method method used to remove ridges.
 #' * "random" randomly removes a proportion of ridges.
 #' * "grid" uniformly sample a proportion of ridges.
-#' * "strip" remove a proportion of strips of ridges with a low elevation variance.
+#' * "strip" remove a proportion of consecutive ridges.
 #' @export
 
 filter_ridge_rank <- function(data, p, method = "grid") {
@@ -366,7 +372,7 @@ render_ridge <- function(
 
   # compute z shift as a function of ridge index
   data_shift <- data %>%
-    dplyr::inner_join(data_index) %>%
+    dplyr::inner_join(data_index, by = "y") %>%
     dplyr::group_by(y) %>%
     dplyr::mutate(xn = x - min(x), x_rank = rank(x)) %>% dplyr::ungroup() %>%
     dplyr::arrange(y) %>% dplyr::group_by(x) %>%

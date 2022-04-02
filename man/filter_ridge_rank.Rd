@@ -15,7 +15,7 @@ filter_ridge_rank(data, p, method = "grid")
 \itemize{
 \item "random" randomly removes a proportion of ridges.
 \item "grid" uniformly sample a proportion of ridges.
-\item "strip" remove a proportion of strips of ridges with a low elevation variance.
+\item "strip" remove a proportion of consecutive ridges.
 }}
 }
 \description{

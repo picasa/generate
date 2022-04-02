@@ -190,28 +190,37 @@ gen_node <- function(
       path = purrr::map2(i, a, ~ gen_leaf(i = .x, a = .y, shape = shape)),
       c_n = purrr::map_int(path, ~ nrow(.)),
       c_l = purrr::map_dbl(path, ~ sum(.$length))
-    ) %>% tidyr::unnest(path)
-
-  # shift organs vertically
-  layout <- data %>%
-    dplyr::left_join(
-      data %>%
-        dplyr::distinct(id, c_l) %>% dplyr::arrange(-c_l) %>%
-        dplyr::mutate(shift = 0:(dplyr::n() - 1) * shift),
-      by = c("id", "c_l")
     ) %>%
-    dplyr::mutate(dplyr::across(c(y, yend), ~ . + shift))
+    dplyr::filter(c_l < lmax, a != 0) %>%
+    tidyr::unnest(path)
 
-  # trace path with rendering function
-  layout <- layout %>%
-    dplyr::group_by(id, c_n, c_l, a) %>% tidyr::nest() %>%
-    dplyr::mutate(
-      path = purrr::map(
-        data,
-        ~ transform_path(., scale = scale, width = width, method = method)
+
+  if (nrow(data) != 0) {
+
+    # shift organs vertically
+    layout <- data %>%
+      dplyr::left_join(
+        data %>%
+          dplyr::distinct(id, c_l) %>% dplyr::arrange(-c_l) %>%
+          dplyr::mutate(shift = 0:(dplyr::n() - 1) * shift)
+      ) %>%
+      dplyr::mutate(dplyr::across(c(y, yend), ~ . + shift))
+
+    # trace path with rendering function
+    layout <- layout %>%
+      dplyr::group_by(id, c_n, c_l, a) %>% tidyr::nest() %>%
+      dplyr::mutate(
+        path = purrr::map(
+          data,
+          ~ transform_path(., scale = scale, width = width, method = method)
         )) %>%
-    dplyr::select(-data) %>% tidyr::unnest(path) %>%
-    dplyr::filter(c_l < lmax, a != 0)
+      dplyr::select(-data) %>% tidyr::unnest(path)
+
+  } else {
+
+    layout <- tibble::tibble()
+
+  }
 
   return(layout)
 }
