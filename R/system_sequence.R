@@ -194,7 +194,7 @@ gen_node <- function(
     dplyr::filter(c_l < lmax, a != 0) %>%
     tidyr::unnest(path)
 
-
+  # create an empty output if leaf filtering conditions are too drastic.
   if (nrow(data) != 0) {
 
     # shift organs vertically
@@ -202,7 +202,8 @@ gen_node <- function(
       dplyr::left_join(
         data %>%
           dplyr::distinct(id, c_l) %>% dplyr::arrange(-c_l) %>%
-          dplyr::mutate(shift = 0:(dplyr::n() - 1) * shift)
+          dplyr::mutate(shift = 0:(dplyr::n() - 1) * shift),
+        by = c("id", "c_l")
       ) %>%
       dplyr::mutate(dplyr::across(c(y, yend), ~ . + shift))
 
