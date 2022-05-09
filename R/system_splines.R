@@ -10,8 +10,11 @@
 #' @export
 #'
 gen_charmap <- function(
-    n = 26, n_control = 4, n_tall = 4, size_tall = 4,
+    seed, n = 26, n_control = 4, n_tall = 4, size_tall = 4,
     scale = 0.5, rotation = -pi/6) {
+
+  # set seed for charmap
+  if (!missing(seed)) set.seed(seed)
 
   data_map <- tibble::tibble(
     pattern = 1:(n + 3),
@@ -41,7 +44,9 @@ layout_word <- function(word, data, shift = 1) {
   tibble::tibble(character = stringr::str_split(word, "")[[1]]) %>%
     dplyr::left_join(data, by = "character") %>% tidyr::drop_na() %>%
     dplyr::mutate(d = seq(0, by = shift, length = dplyr::n())) %>%
-    dplyr::mutate(layout = purrr::map2(layout, d, ~ dplyr::mutate(..1, x = x + ..2))) %>%
+    dplyr::mutate(
+      layout = purrr::map2(layout, d, ~ dplyr::mutate(..1, x = x + ..2))
+      ) %>%
     tidyr::unnest(layout)
 }
 
