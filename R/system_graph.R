@@ -5,7 +5,8 @@
 #' @param graph method used to compute the graph object from the point layout.
 #' * "rng": [relative neighborhood graph](https://en.wikipedia.org/wiki/Relative_neighborhood_graph),
 #' roughly defines the human perception of the shape of the point set.
-#' * "knn": [nearest neighbor graph](https://en.wikipedia.org/wiki/Nearest_neighbor_graph), connect k adjacent points together.
+#' * "knn": [nearest neighbor graph](https://en.wikipedia.org/wiki/Nearest_neighbor_graph), connect k adjacent points together.,
+#' * "mst" : [minimum spanning tree](https://en.wikipedia.org/wiki/Minimum_spanning_tree), connect all vertices with the minimal edge length.
 #' @param k number of neighbors to account to in both methods. NA is used to calculate the true relative neighborhood graph but increase to compute time.
 #' @param aes aesthetic of the rendered plot.
 #' * "default": point and lines.
@@ -31,6 +32,9 @@ render_graph <- function(
       graph <- as.data.frame(data) %>%
         cccd::rng(k = k) %>% tidygraph::as_tbl_graph()
     },
+
+    mst = {graph <- as.data.frame(data) %>%
+      cccd::rng(k = k) %>% igraph::mst() %>% tidygraph::as_tbl_graph()},
 
     knn = {
       graph <- as.data.frame(data) %>%

@@ -1,6 +1,7 @@
 
 #' Define a map between letters and glyphs
 #' @description Generate a set of control points for a collection of glyphs mapped to characters
+#' @param seed random seed for the character map.
 #' @param n number of letters in the character map. the total length of the character map is n + 3 (addition of ".", ",", "?")
 #' @param n_control number of control points for each glyph
 #' @param n_tall number of tall glyphs
@@ -110,7 +111,9 @@ render_script <- function(
   # randomly select one variation per character.
   glyph <- tibble::tibble(character = seq[[1]]) %>%
     dplyr::mutate(position = seq_along(character)) %>%
-    dplyr::left_join(data %>% dplyr::select(character, pattern, variation, plot)) %>%
+    dplyr::left_join(
+      data %>% dplyr::select(character, pattern, variation, plot),
+      by = "character") %>%
     dplyr::group_by(position, character) %>%
     dplyr::slice_sample(n = 1)
 

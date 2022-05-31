@@ -25,7 +25,8 @@ render_graph(
 \itemize{
 \item "rng": \href{https://en.wikipedia.org/wiki/Relative_neighborhood_graph}{relative neighborhood graph},
 roughly defines the human perception of the shape of the point set.
-\item "knn": \href{https://en.wikipedia.org/wiki/Nearest_neighbor_graph}{nearest neighbor graph}, connect k adjacent points together.
+\item "knn": \href{https://en.wikipedia.org/wiki/Nearest_neighbor_graph}{nearest neighbor graph}, connect k adjacent points together.,
+\item "mst" : \href{https://en.wikipedia.org/wiki/Minimum_spanning_tree}{minimum spanning tree}, connect all vertices with the minimal edge length.
 }}
 
 \item{aes}{aesthetic of the rendered plot.

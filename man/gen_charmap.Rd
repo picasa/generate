@@ -5,6 +5,7 @@
 \title{Define a map between letters and glyphs}
 \usage{
 gen_charmap(
+  seed,
   n = 26,
   n_control = 4,
   n_tall = 4,
@@ -14,6 +15,8 @@ gen_charmap(
 )
 }
 \arguments{
+\item{seed}{random seed for the character map.}
+
 \item{n}{number of letters in the character map. the total length of the character map is n + 3 (addition of ".", ",", "?")}
 
 \item{n_control}{number of control points for each glyph}
