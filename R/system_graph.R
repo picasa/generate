@@ -11,7 +11,8 @@
 #' @param aes aesthetic of the rendered plot.
 #' * "default": point and lines.
 #' * "line": only lines.
-#' * "bezier": Bezier curves.
+#' * "bezier": Draw edges as Bezier curves.
+#' * "arc" : Draw edges as Arcs
 #' @param color,width,alpha fixed aesthetic parameters for the ggplot object
 #' @param coord ggplot2 coordinate system object passed to ggplot
 #' @return a ggplot object
@@ -33,8 +34,10 @@ render_graph <- function(
         cccd::rng(k = k) %>% tidygraph::as_tbl_graph()
     },
 
-    mst = {graph <- as.data.frame(data) %>%
-      cccd::rng(k = k) %>% igraph::mst() %>% tidygraph::as_tbl_graph()},
+    mst = {
+      graph <- as.data.frame(data) %>%
+        cccd::rng(k = k) %>% igraph::mst() %>% tidygraph::as_tbl_graph()
+      },
 
     knn = {
       graph <- as.data.frame(data) %>%
@@ -73,7 +76,18 @@ render_graph <- function(
         ggraph::ggraph(layout = data) +
         ggraph::geom_edge_diagonal(
           edge_width = width, color = color, alpha = alpha,
-          strength = 1, n = 100, lineend = "round", linejoin = "round") +
+          strength = 1, n = 50, lineend = "round", linejoin = "round") +
+        coord + ggplot2::theme_void()
+    },
+
+    # edges as arcs
+    arc = {
+      graph %>%
+        ggraph::ggraph(layout = data) +
+        ggraph::geom_edge_arc(
+          #aes(alpha = ..index..),
+          edge_width = width, color = color, alpha = alpha,
+          strength = 1, n = 20) +
         coord + ggplot2::theme_void()
     }
   )

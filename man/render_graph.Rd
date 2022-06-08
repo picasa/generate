@@ -33,7 +33,8 @@ roughly defines the human perception of the shape of the point set.
 \itemize{
 \item "default": point and lines.
 \item "line": only lines.
-\item "bezier": Bezier curves.
+\item "bezier": Draw edges as Bezier curves.
+\item "arc" : Draw edges as Arcs
 }}
 
 \item{k}{number of neighbors to account to in both methods. NA is used to calculate the true relative neighborhood graph but increase to compute time.}
