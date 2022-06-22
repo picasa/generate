@@ -10,7 +10,8 @@ render_ridge(
   n_drop = 0,
   n_lag = 100,
   z_shift = 15,
-  z_threshold = 10
+  z_threshold = 10,
+  z_k = 0
 )
 }
 \arguments{
@@ -24,7 +25,10 @@ render_ridge(
 
 \item{z_shift}{distance on y-axis used to shift successive ridges (m)}
 
-\item{z_threshold}{minimal distance threshold to remove points between successive ridges (m)}
+\item{z_threshold}{minimal distance threshold to remove points
+between successive ridges (m)}
+
+\item{z_k}{scaling coefficient for perspective computation. a value of 0 switch to linear perspective.}
 }
 \value{
 a dataframe suitable for plotting in two dimensions :

@@ -332,7 +332,9 @@ render_contour <- function(
 #' @param n_drop number of ridges to drop in distance (integer)
 #' @param n_lag depth of search for line removal algorithm (number of successive ridges)
 #' @param z_shift distance on y-axis used to shift successive ridges (m)
-#' @param z_threshold minimal distance threshold to remove points between successive ridges (m)
+#' @param z_threshold minimal distance threshold to remove points
+#'  between successive ridges (m)
+#' @param z_k scaling coefficient for perspective computation. a value of 0 switch to linear perspective.
 #' @return a dataframe suitable for plotting in two dimensions :
 #' * x, longitude (m)
 #' * y, latitude (m)
@@ -354,20 +356,26 @@ render_ridge <- function(
   n_drop = 0,
   n_lag = 100,
   z_shift = 15,
-  z_threshold = 10
+  z_threshold = 10,
+  z_k = 0
   ){
 
   # set n_ridges to max number in data if parameter is 0
   n_ridges <- ifelse(n_ridges == 0, data %>% dplyr::distinct(y) %>% nrow(), n_ridges)
 
   # keep a fixed number of distinct ridges
+  # compute elevation shift as a function of normalized distance
   data_index <- data %>%
     dplyr::distinct(y) %>% dplyr::arrange(y) %>%
     dplyr::slice(seq(1, (dplyr::n() - n_drop), len = n_ridges) %>% as.integer()) %>%
     dplyr::mutate(
       y_rank = rank(y),
       y_dist = scales::rescale(y, to = c(0,1)),
-      dz = 1:dplyr::n() * z_shift
+    ) %>%
+    dplyr::mutate(dz = dplyr::case_when(
+      z_k == 0 ~ y_dist * z_shift * n(),
+      TRUE ~ f_exp(y_dist, k = z_k, a = -1, b = 1) * z_shift * n()
+      )
     )
 
   # compute z shift as a function of ridge index
