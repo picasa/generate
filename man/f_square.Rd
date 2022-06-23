@@ -4,7 +4,7 @@
 \alias{f_square}
 \title{Map a continuous variable to 3 discrete levels}
 \usage{
-f_square(x, i, o)
+f_square(x, i, o, scale = FALSE)
 }
 \arguments{
 \item{x}{numeric vector for input values}
@@ -12,6 +12,8 @@ f_square(x, i, o)
 \item{i}{numeric vector of length 2 for breaks}
 
 \item{o}{numeric vector of length 3 for output values}
+
+\item{scale}{Boolean, if TRUE x input values are scaled (scales::rescale)}
 }
 \value{
 a numeric vector

@@ -372,11 +372,7 @@ render_ridge <- function(
       y_rank = rank(y),
       y_dist = scales::rescale(y, to = c(0,1)),
     ) %>%
-    dplyr::mutate(dz = dplyr::case_when(
-      z_k == 0 ~ y_dist * z_shift * n(),
-      TRUE ~ f_exp(y_dist, k = z_k, a = -1, b = 1) * z_shift * n()
-      )
-    )
+    dplyr::mutate(dz = f_sig(y_dist, k = z_k, a = 2, b = 0) * y_rank * z_shift)
 
   # compute z shift as a function of ridge index
   data_shift <- data %>%
