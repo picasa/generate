@@ -97,12 +97,13 @@ render_spline <- function(
 #' @param scale scaling parameter for individual glyphs
 #' @param orientation option to rotate the point set 90° clockwise
 #' @param align specifies whether graphs in the grid should be horizontally ("h") or vertically ("v") aligned.
+#' @param axis specifies whether graphs should be aligned by the left ("l"), right ("r"), top ("t"), or bottom ("b") margins.
 #' @return a ggplot object.
 #' @export
 
 render_script <- function(
   text, data, length = 80, scale = 0.9,
-  orientation = "h", align = "none") {
+  orientation = "h", align = "none", axis = "none") {
 
   # split text to characters
   seq <- text %>% stringr::str_to_lower() %>% stringr::str_split(., "")
@@ -124,13 +125,13 @@ render_script <- function(
     h = {
       cowplot::plot_grid(
         plotlist = glyph$plot, ncol = length,
-        scale = scale, align = align)
+        scale = scale, align = align, axis = axis)
       },
 
     v = {
       cowplot::plot_grid(
         plotlist = glyph$plot, nrow = length,
-        scale = scale, align = align, byrow = FALSE)
+        scale = scale, align = align, axis = axis, byrow = FALSE)
       }
   )
 

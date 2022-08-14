@@ -10,7 +10,8 @@ render_script(
   length = 80,
   scale = 0.9,
   orientation = "h",
-  align = "none"
+  align = "none",
+  axis = "none"
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ render_script(
 \item{orientation}{option to rotate the point set 90° clockwise}
 
 \item{align}{specifies whether graphs in the grid should be horizontally ("h") or vertically ("v") aligned.}
+
+\item{axis}{specifies whether graphs should be aligned by the left ("l"), right ("r"), top ("t"), or bottom ("b") margins.}
 }
 \value{
 a ggplot object.

@@ -215,7 +215,7 @@ gen_node <- function(
           data,
           ~ transform_path(., scale = scale, width = width, method = method)
         )) %>%
-      dplyr::select(-data) %>% tidyr::unnest(path)
+      dplyr::select(-data) %>% tidyr::unnest(path) %>% dplyr::ungroup()
 
   } else {
 
@@ -277,7 +277,9 @@ render_node <- function(
           size = 0.5, radius = grid::unit(radius, 'pt'))
     },
 
-    sf = {}
+    polygon_sf = {
+
+    }
   )
 
   return(
