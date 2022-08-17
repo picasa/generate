@@ -108,7 +108,7 @@ filter_ridge_slope <- function(
 ) {
 
   data_filter <- data %>%
-    dplyr::group_by(y_rank) %>%
+    dplyr::group_by(y_rank) %>% dplyr::arrange(x_rank) |>
     dplyr::mutate(
       z_slope = abs(
         (zn - dplyr::lag(zn, default = 0)) / (xn - dplyr::lag(xn, default = 0))
