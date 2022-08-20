@@ -156,8 +156,8 @@ gen_leaf <- function(i, a = 20, x0 = 0, y0 = 0, shape = "spiral") {
 #' @param amin,amax bounds of uniform distribution of the angle between path
 #'   segments (degree)
 #' @param lmax maximum value for simulated path length
-#' @param shift vertical shift between paths
-#' @param width a numeric vector for x and y shifts of the individual paths
+#' @param shift a numeric vector for x and y shifts between paths
+#' @param width a numeric vector for x and y shifts to create polygons from paths
 #' @param scale scaling value applied on the complete node
 #' @param shape method for the calculation of successive angles between leaf
 #'   elements (character).
@@ -176,8 +176,8 @@ gen_leaf <- function(i, a = 20, x0 = 0, y0 = 0, shape = "spiral") {
 #'
 gen_node <- function(
   n = 20, imin = 20, imax = 70, lmax = 1000,
-  amin = -20, amax = 20, shift = 20,
-  width = c(0, 15), scale = 1, shape = "spiral", method = "polygon", seed, ...) {
+  amin = -20, amax = 20, shift = c(0, 20), width = c(0, 15), scale = 1,
+  shape = "spiral", method = "polygon", seed = NULL, ...) {
 
   # set seed if needed
   if (!missing(seed)) set.seed(seed)
@@ -197,15 +197,23 @@ gen_node <- function(
   # create an empty output if leaf filtering conditions are too drastic.
   if (nrow(data) != 0) {
 
-    # shift organs vertically
+    # shift organs
+    # vertically as a function of organ length
+    # horizontally as a function of normal distribution (sd = 1/3 mu)
     layout <- data %>%
       dplyr::left_join(
         data %>%
           dplyr::distinct(id, c_l) %>% dplyr::arrange(-c_l) %>%
-          dplyr::mutate(shift = 0:(dplyr::n() - 1) * shift),
+          dplyr::mutate(
+            dx = stats::rnorm(n = n(), shift[1], 0.3 * shift[1]),
+            dy = 0:(dplyr::n() - 1) * shift[2],
+          ),
         by = c("id", "c_l")
       ) %>%
-      dplyr::mutate(dplyr::across(c(y, yend), ~ . + shift))
+      dplyr::mutate(
+        dplyr::across(c(x, xend), ~ . + dx),
+        dplyr::across(c(y, yend), ~ . + dy)
+      )
 
     # trace path with rendering function
     layout <- layout %>%

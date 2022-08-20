@@ -11,12 +11,12 @@ gen_node(
   lmax = 1000,
   amin = -20,
   amax = 20,
-  shift = 20,
+  shift = c(0, 20),
   width = c(0, 15),
   scale = 1,
   shape = "spiral",
   method = "polygon",
-  seed,
+  seed = NULL,
   ...
 )
 }
@@ -31,9 +31,9 @@ value (int)}
 \item{amin, amax}{bounds of uniform distribution of the angle between path
 segments (degree)}
 
-\item{shift}{vertical shift between paths}
+\item{shift}{a numeric vector for x and y shifts between paths}
 
-\item{width}{a numeric vector for x and y shifts of the individual paths}
+\item{width}{a numeric vector for x and y shifts to create polygons from paths}
 
 \item{scale}{scaling value applied on the complete node}
 
