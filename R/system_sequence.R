@@ -205,7 +205,7 @@ gen_node <- function(
         data %>%
           dplyr::distinct(id, c_l) %>% dplyr::arrange(-c_l) %>%
           dplyr::mutate(
-            dx = stats::rnorm(n = n(), shift[1], 0.3 * shift[1]),
+            dx = stats::rnorm(n = dplyr::n(), shift[1], 0.3 * shift[1]),
             dy = 0:(dplyr::n() - 1) * shift[2],
           ),
         by = c("id", "c_l")
