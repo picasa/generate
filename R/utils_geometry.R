@@ -30,7 +30,13 @@ rotate <- function(data, a) {
 #' @return a dataframe with new coordinates columns
 #' @export
 
-r_t <- function(data, x0, y0, a) { data %>% rotate(., a) %>% translate(., x0, y0)}
+r_t <- function(data, x0, y0, a) {
+
+  if (nrow(data) > 0)
+    data %>% rotate(., a) %>% translate(., x0, y0)
+  else tibble::tibble()
+
+}
 
 
 # spatial ####
