@@ -32,9 +32,9 @@ rotate <- function(data, a) {
 
 r_t <- function(data, x0, y0, a) {
 
-  if (nrow(data) > 0)
-    data %>% rotate(., a) %>% translate(., x0, y0)
-  else tibble::tibble()
+  if (nrow(data) > 0) {
+    data |> rotate(a) |> translate(x0, y0)
+  } else {tibble::tibble()}
 
 }
 
@@ -51,8 +51,8 @@ as_sf <- function(data) {
   if (nrow(data) == 0) {return(NULL)}
 
   else {
-    data %>%
-      dplyr::select(tidyselect::any_of(c("id", "x", "y"))) %>%
+    data |>
+      dplyr::select(tidyselect::any_of(c("id", "x", "y"))) |>
       sf::st_as_sf(coords = c("x","y"))
   }
 }
@@ -63,8 +63,8 @@ as_sf <- function(data) {
 #' @export
 
 as_sf_polygon <- function(data) {
-  as_sf(data) %>%
-    dplyr::summarise(geometry = sf::st_combine(geometry)) %>%
+  as_sf(data) |>
+    dplyr::summarise(geometry = sf::st_combine(geometry)) |>
     sf::st_cast("POLYGON")
 }
 
@@ -85,12 +85,17 @@ buffer_rectangle <- function(
 
   switch(
     orientation,
+
+
     h = {
       x_size = size / 2
       y_size = (size / ratio) / 2},
+
     v = {
       x_size = (size / ratio) / 2
-      y_size = size / 2}
+      y_size = size / 2},
+
+    stop("Invalid `orientation` value")
   )
 
   sf::st_bbox(data) +

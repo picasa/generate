@@ -26,7 +26,7 @@ collatz <- function(n) {
 #' @return a numeric vector
 #' @export
 seq_collatz <- function(i, max = 1000) {
-  purrr::accumulate(1:max, ~ collatz(.), .init = i) %>% utils::head(., -1)
+  purrr::accumulate(1:max, ~ collatz(.), .init = i) |> utils::head(-1)
 }
 
 #' Calculate a sequence of alternate values sampled from a Normal distribution
@@ -46,7 +46,8 @@ seq_alt <- function(n, m=60, sd=10) {stats::rnorm(n, m, sd)*(-1)^(1:n)}
 #' @return A vector the same length of .x with the same names as .x
 #' @export
 transform_vector <- function(.x, .y) {
-  .y %>% dplyr::mutate(
+  dplyr::mutate(
+    .y,
     x = .x$xend,
     y = .x$yend,
     xend = x + .y$length * cos((90 - .y$angle) * pi/180),
@@ -72,43 +73,45 @@ transform_path <- function(data, scale = 1, width = c(0,10), method = "polygon")
     method,
 
     spline = {
-      plot <- data %>% ggplot2::ggplot(ggplot2::aes(x, y)) + ggforce::geom_bspline()
+      plot <- data |> ggplot2::ggplot(ggplot2::aes(x, y)) + ggforce::geom_bspline()
 
-      path <- ggplot2::layer_data(plot) %>%
-        dplyr::select(x,y) %>%
-        dplyr::mutate(xend = dplyr::lead(x), yend = dplyr::lead(y)) %>%
-        tidyr::drop_na() %>%
-        dplyr::mutate(x = x + width[1], y = y + width[2]) %>%
+      path <- ggplot2::layer_data(plot) |>
+        dplyr::select(x,y) |>
+        dplyr::mutate(xend = dplyr::lead(x), yend = dplyr::lead(y)) |>
+        tidyr::drop_na() |>
+        dplyr::mutate(x = x + width[1], y = y + width[2]) |>
         dplyr::summarise(
           x = c(x, rev(xend), x[1]),
           y = c(y, rev(yend), y[1] - width[2]))
     },
 
     path = {
-      path <- data %>%
+      path <- data |>
         dplyr::mutate(x = x, yend = yend + width[2])
     },
 
     polygon = {
-      path <- data %>%
-        dplyr::mutate(x = x + width[1], y = y + width[2]) %>%
+      path <- data |>
+        dplyr::mutate(x = x + width[1], y = y + width[2]) |>
         dplyr::summarise(
           x = c(x, rev(xend), x[1]),
           y = c(y, rev(yend), y[1] - width[2]))
     },
 
     polygon_lm = {
-      path <- data %>%
+      path <- data |>
         dplyr::mutate(
           l = scales::rescale(n, to = c(1,0)),
-          x = x + width[1], y = y + width[2] * l) %>%
+          x = x + width[1], y = y + width[2] * l) |>
         dplyr::summarise(
           x = c(x, rev(xend), x[1]),
           y = c(y, rev(yend), y[1] - width[2]))
-    }
+    },
+
+    stop("Invalid `method` value")
   )
 
-  return(path %>% dplyr::mutate(dplyr::across(c(x,y), ~ . * scale)))
+  return(path |> dplyr::mutate(dplyr::across(c(x,y), ~ . * scale)))
 
 }
 
@@ -128,7 +131,7 @@ transform_path <- function(data, scale = 1, width = c(0,10), method = "polygon")
 gen_leaf <- function(i, a = 20, x0 = 0, y0 = 0, shape = "spiral") {
 
   # set parameters and initial value
-  init <- tibble::tibble(s = seq_collatz(i)) %>%
+  init <- tibble::tibble(s = seq_collatz(i)) |>
     dplyr::mutate(
       n = seq_along(s),
       length = s,
@@ -142,11 +145,11 @@ gen_leaf <- function(i, a = 20, x0 = 0, y0 = 0, shape = "spiral") {
     )
 
   # transform vector coordinates
-  init %>%
-    dplyr::group_by(n) %>% tidyr::nest() %>% dplyr::ungroup() %>%
+  init |>
+    dplyr::group_by(n) |> tidyr::nest() |> dplyr::ungroup() |>
     dplyr::mutate(
       data = purrr::accumulate(data, transform_vector)
-    ) %>% tidyr::unnest(data)
+    ) |> tidyr::unnest(data)
 }
 
 #' Generate a collection of path suitable to represent a node-like structure
@@ -184,14 +187,14 @@ gen_node <- function(
 
   data <- tibble::tibble(
     id = seq_len(n),
-    i = stats::runif(n, imin, imax) %>% as.integer(),
-    a = stats::runif(n, amin, amax)) %>%
+    i = stats::runif(n, imin, imax) |> as.integer(),
+    a = stats::runif(n, amin, amax)) |>
     dplyr::mutate(
       path = purrr::map2(i, a, ~ gen_leaf(i = .x, a = .y, shape = shape)),
       c_n = purrr::map_int(path, ~ nrow(.)),
       c_l = purrr::map_dbl(path, ~ sum(.$length))
-    ) %>%
-    dplyr::filter(c_l < lmax, a != 0) %>%
+    ) |>
+    dplyr::filter(c_l < lmax, a != 0) |>
     tidyr::unnest(path)
 
   # create an empty output if leaf filtering conditions are too drastic.
@@ -200,30 +203,30 @@ gen_node <- function(
     # shift organs
     # vertically as a function of organ length
     # horizontally as a function of normal distribution (sd = 1/3 mu)
-    layout <- data %>%
+    layout <- data |>
       dplyr::left_join(
-        data %>%
-          dplyr::distinct(id, c_l) %>% dplyr::arrange(-c_l) %>%
+        data |>
+          dplyr::distinct(id, c_l) |> dplyr::arrange(-c_l) |>
           dplyr::mutate(
             dx = stats::rnorm(n = dplyr::n(), shift[1], 0.3 * shift[1]),
             dy = 0:(dplyr::n() - 1) * shift[2],
           ),
         by = c("id", "c_l")
-      ) %>%
+      ) |>
       dplyr::mutate(
         dplyr::across(c(x, xend), ~ . + dx),
         dplyr::across(c(y, yend), ~ . + dy)
       )
 
     # trace path with rendering function
-    layout <- layout %>%
-      dplyr::group_by(id, c_n, c_l, a) %>% tidyr::nest() %>%
+    layout <- layout |>
+      dplyr::group_by(id, c_n, c_l, a) |> tidyr::nest() |>
       dplyr::mutate(
         path = purrr::map(
           data,
           ~ transform_path(., scale = scale, width = width, method = method)
-        )) %>%
-      dplyr::select(-data) %>% tidyr::unnest(path) %>% dplyr::ungroup()
+        )) |>
+      dplyr::select(-data) |> tidyr::unnest(path) |> dplyr::ungroup()
 
   } else {
 
@@ -258,19 +261,19 @@ render_node <- function(
     method,
 
     path = {
-      plot <- data %>%
+      plot <- data |>
         ggplot2::ggplot(ggplot2::aes(x, y, group = id)) +
         ggplot2::geom_path(size = 0.5, alpha = 1)
     },
 
     spline = {
-      plot <- data %>%
+      plot <- data |>
         ggplot2::ggplot(ggplot2::aes(x, y, group = id)) +
         ggforce::geom_bspline(size = 0.5, alpha = 1)
     },
 
     segment = {
-      plot <- data %>%
+      plot <- data |>
         ggplot2::ggplot(ggplot2::aes(x, y, xend = xend, yend = yend, group = id)) +
         ggplot2::geom_segment(size = 0.5, lineend = "round", alpha = 0.3) +
         ggplot2::geom_path(size = 0.5, alpha = 1) +
@@ -278,7 +281,7 @@ render_node <- function(
     },
 
     polygon = {
-      plot <- data %>%
+      plot <- data |>
         ggplot2::ggplot(ggplot2::aes(x,y, group = id)) +
         ggforce::geom_shape(
           color="black", fill="white",
@@ -287,7 +290,9 @@ render_node <- function(
 
     polygon_sf = {
 
-    }
+    },
+
+    stop("Invalid `method` value")
   )
 
   return(

@@ -45,7 +45,9 @@ save_plot <- function(
       ggplot2::ggsave(
         plot, file = glue::glue("{path}/{file}.svg"),
         width = size[1], height = size[2], scale=1, units="mm")
-    }
+    },
+
+    stop("Invalid `format` value")
   )
 
 }

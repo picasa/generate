@@ -34,11 +34,13 @@ layout_square <- function(
 
     sobol = {
       xlim[1] + (xlim[2] - xlim[1]) *
-        randtoolbox::sobol(n, dim = 2, scrambling = 1, seed = seed) %>%
-        tibble::as_tibble() %>%
-        dplyr::mutate(n = seq_along(V1)) %>%
+        randtoolbox::sobol(n, dim = 2, scrambling = 1, seed = seed) |>
+        tibble::as_tibble() |>
+        dplyr::mutate(n = seq_along(V1)) |>
         dplyr::select(n, x=V1, y=V2)
-    }
+    },
+
+    stop("Invalid `method` value")
 
   )
 
@@ -64,11 +66,11 @@ layout_ellipse <- function(
   layout <- tibble::tibble(
     n = 1:n,
     x0 = x0 + r * cos(theta),
-    y0 = y0 + r * sin(theta)) %>%
-    dplyr::mutate(x0 = x0 * scale_x) %>%
+    y0 = y0 + r * sin(theta)) |>
+    dplyr::mutate(x0 = x0 * scale_x) |>
     dplyr::mutate(
       x = x0*cos(a) - y0*sin(a),
-      y = x0*sin(a) + y0*cos(a)) %>%
+      y = x0*sin(a) + y0*cos(a)) |>
     dplyr::select(n,x,y)
 
   return(layout)
@@ -141,7 +143,9 @@ sample_missing <- function(x, y = NULL, p, method = "random") {
       #s <- scales::rescale(s, to = c(1, n))
       x[s] <- NA
       return(x)
-    }
+    },
+
+    stop("Invalid `method` value")
   )
 }
 
@@ -153,11 +157,11 @@ sample_missing <- function(x, y = NULL, p, method = "random") {
 #' @export
 #'
 sample_vessel <- function(x0 = 0, y0 = 0, l = 5, r = 1/100, jitter = 1/500) {
-  tibble::tibble(l = 1:l) %>%
-    dplyr::mutate(n = l * 10, r = seq(1/40, r * dplyr::n(), len = dplyr::n())) %>%
-    dplyr::mutate(data = purrr::map2(n, r, ~ sample_perimeter(n = ..1, r = ..2))) %>%
-    dplyr::select(l, data) %>% tidyr::unnest(data) %>%
-    dplyr::mutate(x = x + x0, y = y + y0) %>%
+  tibble::tibble(l = 1:l) |>
+    dplyr::mutate(n = l * 10, r = seq(1/40, r * dplyr::n(), len = dplyr::n())) |>
+    dplyr::mutate(data = purrr::map2(n, r, ~ sample_perimeter(n = ..1, r = ..2))) |>
+    dplyr::select(l, data) |> tidyr::unnest(data) |>
+    dplyr::mutate(x = x + x0, y = y + y0) |>
     dplyr::mutate(dplyr::across(x:y, ~ jitter(., a = jitter)))
 }
 

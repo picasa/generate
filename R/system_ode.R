@@ -26,8 +26,8 @@ simulate_lv <- function(
         list(c(dx, dy))
       })
     }
-  ) %>%
-    as.data.frame() %>% tibble::tibble()
+  ) |>
+    as.data.frame() |> tibble::tibble()
 }
 
 #
@@ -58,9 +58,9 @@ simulate_duffing <- function(
         list(c(dx, dy))
       })
     }
-  ) %>%
-    as.data.frame() %>%
-    dplyr::mutate(iteration = dplyr::row_number()) %>% tibble::tibble()
+  ) |>
+    as.data.frame() |>
+    dplyr::mutate(iteration = dplyr::row_number()) |> tibble::tibble()
 }
 
 #' Simulator for the Lorenz dynamical system
@@ -91,9 +91,9 @@ simulate_lorenz <- function(
         list(c(dx, dy, dz))
       })
     }
-  ) %>%
-    as.data.frame() %>%
-    dplyr::mutate(iteration = dplyr::row_number()) %>% tibble::tibble()
+  ) |>
+    as.data.frame() |>
+    dplyr::mutate(iteration = dplyr::row_number()) |> tibble::tibble()
 }
 
 #' Simulate discrete time quadratic maps
@@ -123,9 +123,9 @@ simulate_quadratic <- function(
         list(c(dx, dy))
       })
     }
-  ) %>%
-    as.data.frame() %>%
-    dplyr::mutate(iteration = dplyr::row_number()) %>% tibble::tibble()
+  ) |>
+    as.data.frame() |>
+    dplyr::mutate(iteration = dplyr::row_number()) |> tibble::tibble()
 }
 
 
@@ -140,21 +140,21 @@ gen_field <- function(p, n, t, s = 1/100, x0 = c(-1,1), y0 = c(0.5,1)) {
   # TODO : code f parameter to handle different ODE
 
   # set up a LHS design for initial conditions
-  design_initial <- lhs::randomLHS(n = n, k=2) %>%
-    tibble::as_tibble() %>% purrr::set_names(c("x","y")) %>%
+  design_initial <- lhs::randomLHS(n = n, k=2) |>
+    tibble::as_tibble() |> purrr::set_names(c("x","y")) |>
     dplyr::mutate(
       x = scales::rescale(x, to = x0),
-      y = scales::rescale(y, to = y0)) %>%
-    dplyr::mutate(i = purrr::map2(x, y, ~ c(x = ..1, y= ..2))) %>%
-    dplyr::mutate(id = seq_along(x)) %>% dplyr::select(id, i)
+      y = scales::rescale(y, to = y0)) |>
+    dplyr::mutate(i = purrr::map2(x, y, ~ c(x = ..1, y= ..2))) |>
+    dplyr::mutate(id = seq_along(x)) |> dplyr::select(id, i)
 
   design <- tidyr::crossing(tibble::tibble(p = list(p)), design_initial)
 
   # simulate
-  data <- design %>%
+  data <- design |>
     dplyr::mutate(trace = furrr::future_map2(p, i, ~ simulate_duffing(
       parameters = ..1, start_coords = ..2, t_max = t, t_step = s)))
 
-  return(data %>% tidyr::unnest(trace))
+  return(data |> tidyr::unnest(trace))
 
 }

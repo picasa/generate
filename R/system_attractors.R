@@ -6,7 +6,7 @@
 #' @return a vector of length two with n+1 values
 #' @export
 logistic_map <- function(p, xn, yn) {
-  xn1 <- p[1]*xn*(1 - xn)
+  xn1 <- p[1] * xn * (1 - xn)
   yn1 <- 0
 
   c(xn1, yn1)
@@ -58,7 +58,7 @@ iterate <- function(f, p, x0, y0, iterations, ...) {
     y[n+1] <- xy[2]
   }
 
-  tibble::tibble(x = x, y = y) %>%
+  tibble::tibble(x = x, y = y) |>
     dplyr::mutate(iteration = dplyr::row_number())
 }
 
@@ -121,11 +121,11 @@ L <- function(f, p, x0, y0, iterations = 1000) {
 normalize_xy <- function(data, n = 100) {
 
   # remove outliers (usually in first iterations)
-  data <- data %>% dplyr::slice(n = -(1:n))
+  data <- data |> dplyr::slice(n = -(1:n))
 
   range <- with(data, max(max(x) - min(x), max(y) - min(y)))
 
-  data %>%
+  data |>
     dplyr::mutate(
       x = (x - min(x)) / range,
       y = (y - min(y)) / range
@@ -140,10 +140,10 @@ normalize_xy <- function(data, n = 100) {
 
 bin_xy <- function(data, gridsize = 20) {
 
-   data %>%
+   data |>
     dplyr::group_by(x = round(x * gridsize) / gridsize,
-             y = round(y * gridsize) / gridsize) %>%
-    dplyr::summarize(n = dplyr::n()) %>% dplyr::ungroup()
+             y = round(y * gridsize) / gridsize) |>
+    dplyr::summarize(n = dplyr::n()) |> dplyr::ungroup()
 
 }
 
@@ -185,9 +185,9 @@ get_parameters <- function(
 #' @export
 
 density_metric <- function(data, gridsize = 20) {
-  data %>%
-    normalize_xy() %>%
-    bin_xy(gridsize) %>%
+  data |>
+    normalize_xy() |>
+    bin_xy(gridsize) |>
     dplyr::summarise(
       d = dplyr::n() / gridsize^2,
       m = mean(n) / sum(n) * 100,
@@ -208,7 +208,7 @@ density_metric <- function(data, gridsize = 20) {
 
 render_plot <- function(data, color="black", size=0.5, alpha=1/10) {
 
-  data %>%
+  data |>
     ggplot2::ggplot(ggplot2::aes(x, y)) +
     ggplot2::geom_point(color = color, size = size, alpha = alpha) +
     ggplot2::coord_equal() + ggplot2::theme_void()
@@ -222,7 +222,7 @@ render_plot <- function(data, color="black", size=0.5, alpha=1/10) {
 #' @export
 
 render_sequence <- function(n, length, data) {
-    sample(data, size = n, replace = TRUE) %>%
+    sample(data, size = n, replace = TRUE) |>
     cowplot::plot_grid(plotlist = ., nrow = length) +
     ggplot2::theme_void() +
     ggplot2::theme(plot.margin = grid::unit(c(1,0,1,0), "cm"))
@@ -238,11 +238,11 @@ render_sequence <- function(n, length, data) {
 #' @export
 
 render_paragraph <- function(text, data, ncol = 80, scale = 0.8, align = "none") {
-  seq <- text %>% stringr::str_to_lower() %>% stringr::str_split(., "")
+  seq <- text |> stringr::str_to_lower() |> stringr::str_split(., "")
 
   # join characters with glyph plots, non-match creates NULL plot (blank space with cowplot)
-  data <- tibble::tibble(character=seq[[1]]) %>%
-    dplyr::left_join(data %>% dplyr::select(character, pattern, plot = plot_ld))
+  data <- tibble::tibble(character=seq[[1]]) |>
+    dplyr::left_join(data |> dplyr::select(character, pattern, plot = plot_ld))
 
   cowplot::plot_grid(plotlist = data$plot, ncol=ncol, scale=scale, align = align)
 }

@@ -16,9 +16,9 @@ read_dem <- function(coord, buffer = 1000, dep, source="db_alti"){
   location <- if (is.vector(coord)) {
     data.frame(
       lon = coord["lon"],
-      lat = coord["lat"]) %>%
-      sf::st_as_sf(coords = c("lon", "lat")) %>%
-      sf::st_set_crs(4326) %>%
+      lat = coord["lat"]) |>
+      sf::st_as_sf(coords = c("lon", "lat")) |>
+      sf::st_set_crs(4326) |>
       sf::st_transform(crs = 2154)
   } else coord
 
@@ -35,7 +35,9 @@ read_dem <- function(coord, buffer = 1000, dep, source="db_alti"){
       # https://geo.api.gouv.fr/adresse
       # TODO handle cases with cross departements datasets
       grid <- sf::read_sf(glue::glue("data/private/{source}/shp/{dep}/dalles.shp"))
-    }
+    },
+
+    stop("Invalid `source` value")
   )
 
   sf::st_agr(grid) = "constant"
@@ -43,17 +45,17 @@ read_dem <- function(coord, buffer = 1000, dep, source="db_alti"){
   # list tile containing requested location plus buffer
   list_tiles <- sf::st_intersection(
     grid,
-    location %>% sf::st_buffer(buffer)
-    ) %>%
+    location |> sf::st_buffer(buffer)
+    ) |>
     dplyr::pull(NOM_DALLE)
 
   # read corresponding tiles and merge them
   dem_list <- tibble::tibble(
       path = glue::glue("data/private/{source}/data/{list_tiles}.asc")
-    ) %>%
+    ) |>
     dplyr::mutate(
       dem = purrr::map(
-        path, ~ stars::read_stars(.) %>% purrr::set_names("z") %>% sf::st_set_crs(2154)
+        path, ~ stars::read_stars(.) |> purrr::set_names("z") |> sf::st_set_crs(2154)
         )
       )
 
@@ -80,15 +82,15 @@ filter_ridge_length <- function(
 ) {
 
   # filter for ridge elements shorter than a threshold (cell number)
-  data_cell <- data %>% dplyr::ungroup() %>% dplyr::arrange(y,x) %>%
-    dplyr::mutate(zl = cumsum(is.na(zn))) %>%
-    dplyr::group_by(zl) %>% dplyr::mutate(zl_n = dplyr::n()) %>% dplyr::ungroup() %>%
+  data_cell <- data |> dplyr::ungroup() |> dplyr::arrange(y,x) |>
+    dplyr::mutate(zl = cumsum(is.na(zn))) |>
+    dplyr::group_by(zl) |> dplyr::mutate(zl_n = dplyr::n()) |> dplyr::ungroup() |>
     dplyr::mutate(zn = dplyr::if_else(zl_n <= length_n, NA_real_, zn))
 
   # filter for ridge lines with a low contribution
-  data_line <- data %>%
-    dplyr::group_by(y_rank, y_dist) %>%
-    dplyr::summarise(xp = sum(!is.na(zn)) / dplyr::n(), .groups = "drop") %>%
+  data_line <- data |>
+    dplyr::group_by(y_rank, y_dist) |>
+    dplyr::summarise(xp = sum(!is.na(zn)) / dplyr::n(), .groups = "drop") |>
     dplyr::filter(xp < length_x, y_dist > dist_y)
 
   data_filter <- dplyr::anti_join(data_cell, data_line, by = c("y_rank", "y_dist"))
@@ -107,15 +109,15 @@ filter_ridge_slope <- function(
   size = 3
 ) {
 
-  data_filter <- data %>%
-    dplyr::group_by(y_rank) %>% dplyr::arrange(x_rank) |>
+  data_filter <- data |>
+    dplyr::group_by(y_rank) |> dplyr::arrange(x_rank) |>
     dplyr::mutate(
       z_slope = abs(
         (zn - dplyr::lag(zn, default = 0)) / (xn - dplyr::lag(xn, default = 0))
         ),
       z_slope = RcppRoll::roll_mean(z_slope, n = size, fill = NA_real_),
       zn = dplyr::if_else(z_slope == 0, NA_real_, zn)
-    ) %>% dplyr::ungroup()
+    ) |> dplyr::ungroup()
 
 
   return(data_filter)
@@ -140,7 +142,7 @@ filter_ridge_rank <- function(data, p, method = "grid") {
     random = {
       dplyr::inner_join(
         data,
-        data %>% dplyr::distinct(y_rank) %>%
+        data |> dplyr::distinct(y_rank) |>
           dplyr::slice_sample(prop = p)
       )
     },
@@ -148,9 +150,9 @@ filter_ridge_rank <- function(data, p, method = "grid") {
     grid = {
       dplyr::inner_join(
         data,
-        data %>% dplyr::distinct(y_rank) %>%
+        data |> dplyr::distinct(y_rank) |>
           dplyr::slice(
-            seq(1, dplyr::n(), len = p * dplyr::n()) %>%
+            seq(1, dplyr::n(), len = p * dplyr::n()) |>
               as.integer()
           )
       )
@@ -159,13 +161,14 @@ filter_ridge_rank <- function(data, p, method = "grid") {
     strip = {
       dplyr::inner_join(
         data,
-        data %>% dplyr::distinct(y_rank) %>%
+        data |> dplyr::distinct(y_rank) |>
           dplyr::slice(
-            sample(1:n(), p * n()) %>%
-              purrr::map(~ .x:(.x + 40)) %>% purrr::flatten_int()
+            sample(1:n(), p * n()) |>
+              purrr::map(~ .x:(.x + 40)) |> purrr::flatten_int()
           )
       )
-    }
+    },
+    stop("Invalid `method` value")
   )
 }
 
@@ -187,12 +190,12 @@ geom_waterline <- function(
   plot <- tibble::tibble(
     buffer = purrr::accumulate(seq(d0, by=1, length.out = n), ~ . * r),
     shade = seq(0.5, 0.9, length.out = n)
-  ) %>%
+  ) |>
     dplyr::mutate(
       layers = purrr::map2(
         buffer, shade,
         ~ ggplot2::geom_sf(
-          data = data %>% sf::st_buffer(.x), # %>% st_crop(data),
+          data = data |> sf::st_buffer(.x), # |> st_crop(data),
           fill = NA, color = colorspace::lighten(color, .y), size = 1/10 * scale)
       ))
 
@@ -222,18 +225,18 @@ render_contour <- function(
   outline = FALSE, layers = FALSE, ...) {
 
   # define a sf point object corresponding to given coordinates
-  point <- data.frame(lon = coord["lon"], lat = coord["lat"]) %>%
-    sf::st_as_sf(coords = c("lon", "lat")) %>%
-    sf::st_set_crs(4326) %>% sf::st_transform(crs = 2154)
+  point <- data.frame(lon = coord["lon"], lat = coord["lat"]) |>
+    sf::st_as_sf(coords = c("lon", "lat")) |>
+    sf::st_set_crs(4326) |> sf::st_transform(crs = 2154)
 
   # define map layers with contour lines
   # TODO simplify polygons to speed up plotting with rmapshaper::ms_simplify
   # TODO crop before contour
   # TODO test isoband package to speed up calculations
 
-  layer_shore <- data %>%
-    stars::st_contour(breaks = c(0, alt_min), contour_lines = TRUE) %>%
-    sf::st_crop(buffer_rectangle(point, ...)) %>%
+  layer_shore <- data |>
+    stars::st_contour(breaks = c(0, alt_min), contour_lines = TRUE) |>
+    sf::st_crop(buffer_rectangle(point, ...)) |>
     dplyr::filter(sf::st_length(.) > units::set_units(length_min,"m"))
 
   bb <- sf::st_bbox(layer_shore)
@@ -248,31 +251,33 @@ render_contour <- function(
       breaks_minor <- seq(alt_min, alt_max, by = alt_contour / 2)
 
       # get a multipolygon object for water, used to compute waterlines
-      layer_water <- data %>%
-        stars::st_contour(breaks = c(0, alt_min)) %>%
-        sf::st_buffer(dist = 0) %>%
-        sf::st_crop(buffer_rectangle(point, ...)) %>%
-        sf::st_cast("MULTIPOLYGON") %>% dplyr::slice(2) %>%
-        sf::st_cast("POLYGON") %>%
-        dplyr::filter(sf::st_area(.) > units::set_units(area_min,"m^2")) %>%
+      layer_water <- data |>
+        stars::st_contour(breaks = c(0, alt_min)) |>
+        sf::st_buffer(dist = 0) |>
+        sf::st_crop(buffer_rectangle(point, ...)) |>
+        sf::st_cast("MULTIPOLYGON") |> dplyr::slice(2) |>
+        sf::st_cast("POLYGON") |>
+        dplyr::filter(sf::st_area(.) > units::set_units(area_min,"m^2")) |>
         sf::st_combine()
 
-      layer_contour_minor <- data %>%
+      layer_contour_minor <- data |>
         stars::st_contour(
           breaks = breaks_minor[! breaks_minor %in% breaks_major],
-          contour_lines = TRUE) %>%
-        sf::st_crop(buffer_rectangle(point, ...)) %>%
+          contour_lines = TRUE) |>
+        sf::st_crop(buffer_rectangle(point, ...)) |>
         dplyr::filter(sf::st_length(.) > units::set_units(length_min,"m"))
 
-      layer_contour_major <- data %>%
+      layer_contour_major <- data |>
         stars::st_contour(
           breaks = breaks_major[! breaks_major %in% alt_min],
-          contour_lines = TRUE) %>%
-        sf::st_crop(buffer_rectangle(point, ...)) %>%
+          contour_lines = TRUE) |>
+        sf::st_crop(buffer_rectangle(point, ...)) |>
         dplyr::filter(sf::st_length(.) > units::set_units(length_min,"m"))
       },
 
-    "TRUE" = {}
+    "TRUE" = {},
+
+    stop("Invalid `outline` value")
   )
 
   # plot contour lines
@@ -309,13 +314,16 @@ render_contour <- function(
         coord_box = coord_box)
 
     },
+
     "TRUE" = {
       plot <- ggplot2::ggplot() +
         ggplot2::geom_sf(
           data = layer_shore,
           color="black", size = 4/10 * scale) +
         ggplot2::theme_void()
-    }
+    },
+
+    stop("Invalid `outline` value")
   )
 
   switch(
@@ -361,25 +369,25 @@ render_ridge <- function(
   ){
 
   # set n_ridges to max number in data if parameter is 0
-  n_ridges <- ifelse(n_ridges == 0, data %>% dplyr::distinct(y) %>% nrow(), n_ridges)
+  n_ridges <- ifelse(n_ridges == 0, data |> dplyr::distinct(y) |> nrow(), n_ridges)
 
   # keep a fixed number of distinct ridges
   # compute elevation shift as a function of normalized distance
-  data_index <- data %>%
-    dplyr::distinct(y) %>% dplyr::arrange(y) %>%
-    dplyr::slice(seq(1, (dplyr::n() - n_drop), len = n_ridges) %>% as.integer()) %>%
+  data_index <- data |>
+    dplyr::distinct(y) |> dplyr::arrange(y) |>
+    dplyr::slice(seq(1, (dplyr::n() - n_drop), len = n_ridges) |> as.integer()) |>
     dplyr::mutate(
       y_rank = rank(y),
       y_dist = scales::rescale(y, to = c(0,1)),
-    ) %>%
+    ) |>
     dplyr::mutate(dz = f_sig(y_dist, k = z_k, a = 2, b = 0) * y_rank * z_shift)
 
   # compute z shift as a function of ridge index
-  data_shift <- data %>%
-    dplyr::inner_join(data_index, by = "y") %>%
-    dplyr::group_by(y) %>%
-    dplyr::mutate(xn = x - min(x), x_rank = rank(x)) %>% dplyr::ungroup() %>%
-    dplyr::arrange(y) %>% dplyr::group_by(x) %>%
+  data_shift <- data |>
+    dplyr::inner_join(data_index, by = "y") |>
+    dplyr::group_by(y) |>
+    dplyr::mutate(xn = x - min(x), x_rank = rank(x)) |> dplyr::ungroup() |>
+    dplyr::arrange(y) |> dplyr::group_by(x) |>
     dplyr::mutate(
       zs = z + dz,
       z_rank = rank(zs)
@@ -391,13 +399,13 @@ render_ridge <- function(
 
   # remove points hidden by foreground ridges :
   # distance between successive y for each x is less than a threshold (default 0)
-  data_ridge <- data_shift %>%
-    dplyr::mutate(dplyr::across(zs, .fns = list_distance)) %>%
-    dplyr::ungroup() %>%
+  data_ridge <- data_shift |>
+    dplyr::mutate(dplyr::across(zs, .fns = list_distance)) |>
+    dplyr::ungroup() |>
     dplyr::mutate(
       zn = dplyr::case_when(
         dplyr::if_any(tidyselect::all_of(list_col), ~ . < z_threshold) ~ NA_real_,
-        TRUE ~ zs)) %>%
+        TRUE ~ zs)) |>
     dplyr::select(- tidyselect::all_of(list_col))
 
   return(data_ridge)

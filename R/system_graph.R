@@ -23,26 +23,28 @@ render_graph <- function(
   graph = "rng", aes = "default", k = 3,
   color = "black", width = 0.5, alpha=0.5, coord=NULL) {
 
-  data <- data %>% dplyr::select({{vars}}) %>% dplyr::rename(x = 1, y = 2)
+  data <- data |> dplyr::select({{vars}}) |> dplyr::rename(x = 1, y = 2)
 
   # compute graph from point layout
   switch(
     graph,
 
     rng = {
-      graph <- as.data.frame(data) %>%
-        cccd::rng(k = k) %>% tidygraph::as_tbl_graph()
+      graph <- as.data.frame(data) |>
+        cccd::rng(k = k) |> tidygraph::as_tbl_graph()
     },
 
     mst = {
-      graph <- as.data.frame(data) %>%
-        cccd::rng(k = k) %>% igraph::mst() %>% tidygraph::as_tbl_graph()
+      graph <- as.data.frame(data) |>
+        cccd::rng(k = k) |> igraph::mst() |> tidygraph::as_tbl_graph()
       },
 
     knn = {
-      graph <- as.data.frame(data) %>%
-        cccd::nng(k = k) %>% igraph::as.undirected(.) %>% tidygraph::as_tbl_graph()
-    }
+      graph <- as.data.frame(data) |>
+        cccd::nng(k = k) |> igraph::as.undirected() |> tidygraph::as_tbl_graph()
+    },
+
+    stop("Invalid `graph` value")
   )
 
 
@@ -53,7 +55,7 @@ render_graph <- function(
     # edges as straight lines and nodes as points
     default = {
 
-      graph %>%
+      graph |>
         ggraph::ggraph(layout = data) +
         ggraph::geom_edge_link(edge_width = width, color = color, alpha = alpha) +
         ggraph::geom_node_point(size = width * 1.5, color = color) +
@@ -63,7 +65,7 @@ render_graph <- function(
     # edges as straight lines
     line = {
 
-      graph %>%
+      graph |>
         ggraph::ggraph(layout = data) +
         ggraph::geom_edge_link0(edge_width = width, color = color, lineend = "round") +
         coord + ggplot2::theme_void()
@@ -72,7 +74,7 @@ render_graph <- function(
     # edges as Bezier curves
     bezier = {
 
-      graph %>%
+      graph |>
         ggraph::ggraph(layout = data) +
         ggraph::geom_edge_diagonal(
           edge_width = width, color = color, alpha = alpha,
@@ -82,14 +84,16 @@ render_graph <- function(
 
     # edges as arcs
     arc = {
-      graph %>%
+      graph |>
         ggraph::ggraph(layout = data) +
         ggraph::geom_edge_arc(
           #aes(alpha = ..index..),
           edge_width = width, color = color, alpha = alpha,
           strength = 1, n = 20) +
         coord + ggplot2::theme_void()
-    }
+    },
+
+    stop("Invalid `aes` value")
   )
 
 
