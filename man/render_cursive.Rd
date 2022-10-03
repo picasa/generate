@@ -9,6 +9,7 @@ render_cursive(
   data,
   ncol = 80,
   shift = 1,
+  color = "black",
   size = 0.5,
   n_points = 200,
   scale = 0.8
@@ -23,7 +24,7 @@ render_cursive(
 
 \item{shift}{horizontal shift when concatenating individual sets of control points}
 
-\item{size}{size of the spline used to draw glyphs}
+\item{color, size}{color and size of the spline used to draw glyphs}
 
 \item{n_points}{number of points generated for the spline}
 

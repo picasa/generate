@@ -9,6 +9,7 @@ render_spline(
   type = "clamped",
   n = 100,
   orientation = "h",
+  color = "black",
   width = 0.5,
   alpha = 1,
   coord = NULL
@@ -23,7 +24,7 @@ render_spline(
 
 \item{orientation}{option to rotate the point set 90° clockwise}
 
-\item{width, alpha}{arguments passed to \code{geom_bspline()}}
+\item{color, width, alpha}{arguments passed to \code{geom_bspline()}}
 
 \item{coord}{coordinate system passed to \code{ggplot()}}
 }
