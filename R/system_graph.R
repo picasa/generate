@@ -8,6 +8,8 @@
 #' * "knn": [nearest neighbor graph](https://en.wikipedia.org/wiki/Nearest_neighbor_graph), connect k adjacent points together.,
 #' * "mst" : [minimum spanning tree](https://en.wikipedia.org/wiki/Minimum_spanning_tree), connect all vertices with the minimal edge length.
 #' @param k number of neighbors to account to in both methods. NA is used to calculate the true relative neighborhood graph but increase to compute time.
+#' @param n number of points created along the paths
+#' @param strength strength of the curvature of the bend.
 #' @param aes aesthetic of the rendered plot.
 #' * "default": point and lines.
 #' * "line": only lines.
@@ -20,8 +22,8 @@
 
 render_graph <- function(
   data, vars = c(x,y),
-  graph = "rng", aes = "default", k = 3,
-  color = "black", width = 0.5, alpha=0.5, coord=NULL) {
+  graph = "rng", aes = "default", k = 3, n = 15, strength = 0.5,
+  color = "black", width = 0.5, alpha = 1, coord=NULL) {
 
   data <- data |> dplyr::select({{vars}}) |> dplyr::rename(x = 1, y = 2)
 
@@ -52,44 +54,60 @@ render_graph <- function(
   switch(
     aes,
 
-    # edges as straight lines and nodes as points
+    # draws edges as straight lines and nodes as points
     default = {
 
       graph |>
         ggraph::ggraph(layout = data) +
-        ggraph::geom_edge_link(edge_width = width, color = color, alpha = alpha) +
+        ggraph::geom_edge_link(
+          n = n,
+          edge_width = width, color = color, alpha = alpha) +
         ggraph::geom_node_point(size = width * 1.5, color = color) +
         coord + ggplot2::theme_void()
     },
 
-    # edges as straight lines
+    # draws edges as straight lines
     line = {
 
       graph |>
         ggraph::ggraph(layout = data) +
-        ggraph::geom_edge_link0(edge_width = width, color = color, lineend = "round") +
+        ggraph::geom_edge_link0(
+          edge_width = width, color = color, lineend = "round") +
         coord + ggplot2::theme_void()
     },
 
-    # edges as Bezier curves
-    bezier = {
+    # draws edges as quadratic Bezier curves
+    quadratic = {
 
       graph |>
         ggraph::ggraph(layout = data) +
         ggraph::geom_edge_diagonal(
-          edge_width = width, color = color, alpha = alpha,
-          strength = 1, n = 50, lineend = "round", linejoin = "round") +
+          n = n, edge_width = width, color = color, alpha = alpha,
+          strength = strength, lineend = "round", linejoin = "round") +
         coord + ggplot2::theme_void()
     },
 
-    # edges as arcs
+    # draws edges as cubic bezier curves
+    cubic = {
+
+      graph |>
+        ggraph::ggraph(layout = data) +
+        ggraph::geom_edge_bend(
+          n = n, edge_width = width, color = color, alpha = alpha,
+          strength = strength, lineend = "round", linejoin = "round") +
+        coord + ggplot2::theme_void()
+
+    },
+
+
+    # draws edges as arcs
     arc = {
       graph |>
         ggraph::ggraph(layout = data) +
         ggraph::geom_edge_arc(
           #aes(alpha = ..index..),
           edge_width = width, color = color, alpha = alpha,
-          strength = 1, n = 20) +
+          n = n, strength = strength) +
         coord + ggplot2::theme_void()
     },
 

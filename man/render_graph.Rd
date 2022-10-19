@@ -10,9 +10,11 @@ render_graph(
   graph = "rng",
   aes = "default",
   k = 3,
+  n = 15,
+  strength = 0.5,
   color = "black",
   width = 0.5,
-  alpha = 0.5,
+  alpha = 1,
   coord = NULL
 )
 }
@@ -38,6 +40,10 @@ roughly defines the human perception of the shape of the point set.
 }}
 
 \item{k}{number of neighbors to account to in both methods. NA is used to calculate the true relative neighborhood graph but increase to compute time.}
+
+\item{n}{number of points created along the paths}
+
+\item{strength}{strength of the curvature of the bend.}
 
 \item{color, width, alpha}{fixed aesthetic parameters for the ggplot object}
 

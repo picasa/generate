@@ -1,6 +1,33 @@
 
 # geometry ####
 
+#' Get bounding box from 2D objects
+#' @param data dataframe with x and y coordinates
+#' @param method type of output :
+#'   * center : returns the coordinates of center, width and height of the bounding box
+#' @return a list with bounding box attributes
+#' @export
+get_box <- function(data, method = "center") {
+
+  switch(
+    method,
+    center = {
+
+      geo <- list(
+        x0 = mean(range(data$x, na.rm = TRUE)),
+        y0 = mean(range(data$y, na.rm = TRUE)),
+        x = diff(range(data$x, na.rm = TRUE)),
+        y = diff(range(data$y, na.rm = TRUE))
+      )
+
+    },
+    stop("Invalid `method` value")
+  )
+
+  return(geo)
+
+}
+
 #' Translate a 2D object
 #' @param data dataframe with x and y coordinates
 #' @param x0,y0 shift in x and y axis (units)
@@ -103,3 +130,26 @@ buffer_rectangle <- function(
     c(x_shift, y_shift, x_shift, y_shift)
 }
 
+# geoms ####
+
+#' Render a rectangular frame around a 2D object.
+#' @param data data.frame with x and y columns
+#' @param jitter amount of jitter to add to sampled points in the frame
+#' @param expand expansion factor around the object bounding box
+#' @param size,color aesthetics passed to geom_path()
+#' @return a geom_path ggplot layer.
+#' @export
+render_frame <- function(
+    data, jitter = 10, expand = 1.2,
+    size = 0.5, color = "black") {
+
+  ggplot2::geom_path(
+    ggplot2::aes(x,y), size = size, color = color,
+    data = purrr::pmap_df(
+      get_box(data),
+      ~ sample_rectangle(
+        x0 = ..1, y0 = ..2, x = ..3, y = ..4,
+        jitter = jitter, expand = expand)
+    )
+  )
+}

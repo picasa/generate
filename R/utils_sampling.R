@@ -94,6 +94,30 @@ sample_perimeter <- function(n = 7, x0 = 0, y0 = 0, r = 1) {
 
 }
 
+#' Sample n point regularly spaced on a rectangle
+#' @param n number of points
+#' @param expand expansion factor
+#' @param jitter jitter factor
+#' @param x0,y0,x,y coordinates of the center, width and height of the sampled rectangle
+#' @return a dataframe with x and y columns
+#' @export
+sample_rectangle <- function(
+    n = 200, expand = 1.05, jitter = 1,
+    x0, y0, x, y) {
+
+  frame <- tibble::tibble(
+    i = 0:(n-1),
+    t = utils::head(seq(0, 2*pi, by = (2*pi)/length(i)), -1),
+    x = expand * x/2 * (abs(cos(t)) * cos(t) + abs(sin(t)) * sin(t)) + x0,
+    y = expand * y/2 * (abs(cos(t)) * cos(t) - abs(sin(t)) * sin(t)) + y0
+  ) |>
+    dplyr::mutate(x = jitter(x, jitter), y = jitter(y, jitter))
+
+  return(frame)
+
+}
+
+
 #' Sample n points evenly distributed on a disc
 #' @description Points are arranged using Fermat's spiral ([Vogel, 1979](https://doi.org/10.1016%2F0025-5564%2879%2990080-4))
 #' @param n number of points
