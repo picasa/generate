@@ -4,10 +4,12 @@
 \alias{seq_collatz}
 \title{Calculate the Collatz sequence recursively}
 \usage{
-seq_collatz(i, max = 1000)
+seq_collatz(i, end = 1, max = 1000)
 }
 \arguments{
 \item{i}{initial value}
+
+\item{end}{value used to end recursion}
 
 \item{max}{maximum number of iterations}
 }

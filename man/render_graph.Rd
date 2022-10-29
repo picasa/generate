@@ -33,10 +33,11 @@ roughly defines the human perception of the shape of the point set.
 
 \item{aes}{aesthetic of the rendered plot.
 \itemize{
-\item "default": point and lines.
-\item "line": only lines.
-\item "bezier": Draw edges as Bezier curves.
-\item "arc" : Draw edges as Arcs
+\item "default": nodes as point and edges as lines
+\item "line": edges as lines
+\item "quadratic": edges as quadratic Bezier curves
+\item "cubic": edges as Cubic Bezier curves
+\item "arc": edges as arcs
 }}
 
 \item{k}{number of neighbors to account to in both methods. NA is used to calculate the true relative neighborhood graph but increase to compute time.}

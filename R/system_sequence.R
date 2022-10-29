@@ -3,13 +3,14 @@
 
 #' Define rules for calculating the Collatz sequence (with shortcut for odd numbers)
 #' @param n value for step `n`
+#' @param end value used to end recursion
 #' @return value for step `n + 1`
 #' @references https://en.wikipedia.org/wiki/Collatz_conjecture
 #' @export
 
-collatz <- function(n) {
+collatz <- function(n, end = 1) {
 
-  if (n == 1) {
+  if (n <= end) {
     purrr::done(n)
   } else {
     dplyr::case_when(
@@ -22,11 +23,13 @@ collatz <- function(n) {
 
 #' Calculate the Collatz sequence recursively
 #' @param i initial value
+#' @param end value used to end recursion
 #' @param max maximum number of iterations
 #' @return a numeric vector
 #' @export
-seq_collatz <- function(i, max = 1000) {
-  purrr::accumulate(1:max, ~ collatz(.), .init = i) |> utils::head(-1)
+seq_collatz <- function(i, end = 1, max = 1000) {
+  purrr::accumulate(1:max, ~ collatz(., end = end), .init = i) |>
+    utils::head(-1)
 }
 
 #' Calculate a sequence of alternate values sampled from a Normal distribution
@@ -121,6 +124,7 @@ transform_path <- function(data, scale = 1, width = c(0,10), method = "polygon")
 #' @param i starting value for the sequence calculation
 #' @param a value of the angle between leaf segments (degrees)
 #' @param x0,y0 coordinates of the first leaf segments
+#' @param end value used to end recursion
 #' @param shape method for the calculation of successive angles between leaf
 #'   segments (character).
 #'   * "spiral" accumulates angle in the same direction.
@@ -128,10 +132,10 @@ transform_path <- function(data, scale = 1, width = c(0,10), method = "polygon")
 #' @return a dataframe with coordinates of leaf segments
 #' @export
 #'
-gen_leaf <- function(i, a = 20, x0 = 0, y0 = 0, shape = "spiral") {
+gen_leaf <- function(i, a = 20, x0 = 0, y0 = 0, end = 1, shape = "spiral") {
 
   # set parameters and initial value
-  init <- tibble::tibble(s = seq_collatz(i)) |>
+  init <- tibble::tibble(s = seq_collatz(i, end = end)) |>
     dplyr::mutate(
       n = seq_along(s),
       length = s,
@@ -159,6 +163,7 @@ gen_leaf <- function(i, a = 20, x0 = 0, y0 = 0, shape = "spiral") {
 #' @param amin,amax bounds of uniform distribution of the angle between path
 #'   segments (degree)
 #' @param lmax maximum value for simulated path length
+#' @param end value used to end path recursion
 #' @param shift a numeric vector for x and y shifts between paths
 #' @param width a numeric vector for x and y shifts to create polygons from paths
 #' @param scale scaling value applied on the complete node
@@ -178,19 +183,20 @@ gen_leaf <- function(i, a = 20, x0 = 0, y0 = 0, shape = "spiral") {
 #' @export
 #'
 gen_node <- function(
-  n = 20, imin = 20, imax = 70, lmax = 1000,
+  n = 20, imin = 20, imax = 70, lmax = 1000, end = 1,
   amin = -20, amax = 20, shift = c(0, 20), width = c(0, 15), scale = 1,
   shape = "spiral", method = "polygon", seed = NULL, ...) {
 
   # set seed if needed
   if (!missing(seed)) set.seed(seed)
 
+  # iterate collatz function on random starting values
   data <- tibble::tibble(
     id = seq_len(n),
     i = stats::runif(n, imin, imax) |> as.integer(),
     a = stats::runif(n, amin, amax)) |>
     dplyr::mutate(
-      path = purrr::map2(i, a, ~ gen_leaf(i = .x, a = .y, shape = shape)),
+      path = purrr::map2(i, a, ~ gen_leaf(i = .x, a = .y, end = end, shape = shape)),
       c_n = purrr::map_int(path, ~ nrow(.)),
       c_l = purrr::map_dbl(path, ~ sum(.$length))
     ) |>

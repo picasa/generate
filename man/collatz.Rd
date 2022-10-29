@@ -4,10 +4,12 @@
 \alias{collatz}
 \title{Define rules for calculating the Collatz sequence (with shortcut for odd numbers)}
 \usage{
-collatz(n)
+collatz(n, end = 1)
 }
 \arguments{
 \item{n}{value for step \code{n}}
+
+\item{end}{value used to end recursion}
 }
 \value{
 value for step \code{n + 1}

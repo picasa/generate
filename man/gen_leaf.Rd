@@ -4,7 +4,7 @@
 \alias{gen_leaf}
 \title{Generate a path suitable to represent a leaf-like structure}
 \usage{
-gen_leaf(i, a = 20, x0 = 0, y0 = 0, shape = "spiral")
+gen_leaf(i, a = 20, x0 = 0, y0 = 0, end = 1, shape = "spiral")
 }
 \arguments{
 \item{i}{starting value for the sequence calculation}
@@ -12,6 +12,8 @@ gen_leaf(i, a = 20, x0 = 0, y0 = 0, shape = "spiral")
 \item{a}{value of the angle between leaf segments (degrees)}
 
 \item{x0, y0}{coordinates of the first leaf segments}
+
+\item{end}{value used to end recursion}
 
 \item{shape}{method for the calculation of successive angles between leaf
 segments (character).

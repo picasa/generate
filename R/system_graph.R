@@ -11,10 +11,11 @@
 #' @param n number of points created along the paths
 #' @param strength strength of the curvature of the bend.
 #' @param aes aesthetic of the rendered plot.
-#' * "default": point and lines.
-#' * "line": only lines.
-#' * "bezier": Draw edges as Bezier curves.
-#' * "arc" : Draw edges as Arcs
+#' * "default": nodes as point and edges as lines
+#' * "line": edges as lines
+#' * "quadratic": edges as quadratic Bezier curves
+#' * "cubic": edges as Cubic Bezier curves
+#' * "arc": edges as arcs
 #' @param color,width,alpha fixed aesthetic parameters for the ggplot object
 #' @param coord ggplot2 coordinate system object passed to ggplot
 #' @return a ggplot object

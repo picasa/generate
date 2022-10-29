@@ -9,6 +9,7 @@ gen_node(
   imin = 20,
   imax = 70,
   lmax = 1000,
+  end = 1,
   amin = -20,
   amax = 20,
   shift = c(0, 20),
@@ -27,6 +28,8 @@ gen_node(
 value (int)}
 
 \item{lmax}{maximum value for simulated path length}
+
+\item{end}{value used to end path recursion}
 
 \item{amin, amax}{bounds of uniform distribution of the angle between path
 segments (degree)}
