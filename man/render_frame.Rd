@@ -4,14 +4,14 @@
 \alias{render_frame}
 \title{Render a rectangular frame around a 2D object.}
 \usage{
-render_frame(data, jitter = 10, expand = 1.2, size = 0.5, color = "black")
+render_frame(data, jitter = 10, scaling = 0.1, size = 0.5, color = "black")
 }
 \arguments{
-\item{data}{data.frame with x and y columns}
+\item{data}{data frame with x and y columns, it could be the plotted data or just the limits for the frame.}
 
 \item{jitter}{amount of jitter to add to sampled points in the frame}
 
-\item{expand}{expansion factor around the object bounding box}
+\item{scaling}{scaling factor around the object bounding box}
 
 \item{size, color}{aesthetics passed to geom_path()}
 }

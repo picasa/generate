@@ -2,21 +2,24 @@
 % Please edit documentation in R/utils_geometry.R
 \name{get_box}
 \alias{get_box}
-\title{Get bounding box from 2D objects}
+\title{Get bounding box from 2D dataframes}
 \usage{
-get_box(data, method = "center")
+get_box(data, vars = c("x", "y"), method = "center")
 }
 \arguments{
 \item{data}{dataframe with x and y coordinates}
 
+\item{vars}{alternative names for x and y variables (character vector)}
+
 \item{method}{type of output :
 \itemize{
 \item center : returns the coordinates of center, width and height of the bounding box
+\item points : returns the coordinates of cardinal points
 }}
 }
 \value{
-a list with bounding box attributes
+bounding box attributes
 }
 \description{
-Get bounding box from 2D objects
+Get bounding box from 2D dataframes
 }

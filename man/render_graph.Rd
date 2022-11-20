@@ -8,10 +8,11 @@ render_graph(
   data,
   vars = c(x, y),
   graph = "rng",
-  aes = "default",
   k = 3,
   n = 15,
   strength = 0.5,
+  aes = "default",
+  lineend = "round",
   color = "black",
   width = 0.5,
   alpha = 1,
@@ -31,6 +32,12 @@ roughly defines the human perception of the shape of the point set.
 \item "mst" : \href{https://en.wikipedia.org/wiki/Minimum_spanning_tree}{minimum spanning tree}, connect all vertices with the minimal edge length.
 }}
 
+\item{k}{number of neighbors to account to in both methods. NA is used to calculate the true relative neighborhood graph but increase to compute time.}
+
+\item{n}{number of points created along the paths}
+
+\item{strength}{strength of the curvature of the bend.}
+
 \item{aes}{aesthetic of the rendered plot.
 \itemize{
 \item "default": nodes as point and edges as lines
@@ -40,11 +47,7 @@ roughly defines the human perception of the shape of the point set.
 \item "arc": edges as arcs
 }}
 
-\item{k}{number of neighbors to account to in both methods. NA is used to calculate the true relative neighborhood graph but increase to compute time.}
-
-\item{n}{number of points created along the paths}
-
-\item{strength}{strength of the curvature of the bend.}
+\item{lineend}{shape for line endings.}
 
 \item{color, width, alpha}{fixed aesthetic parameters for the ggplot object}
 

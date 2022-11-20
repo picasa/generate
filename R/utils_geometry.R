@@ -1,16 +1,21 @@
 
 # geometry ####
 
-#' Get bounding box from 2D objects
+#' Get bounding box from 2D dataframes
 #' @param data dataframe with x and y coordinates
+#' @param vars alternative names for x and y variables (character vector)
 #' @param method type of output :
 #'   * center : returns the coordinates of center, width and height of the bounding box
-#' @return a list with bounding box attributes
+#'   * points : returns the coordinates of cardinal points
+#' @return bounding box attributes
 #' @export
-get_box <- function(data, method = "center") {
+get_box <- function(data, vars = c("x","y"), method = "center") {
+
+  data <- data |> dplyr::select(x = {{vars}}[1], y = {{vars}}[2])
 
   switch(
     method,
+
     center = {
 
       geo <- list(
@@ -21,12 +26,25 @@ get_box <- function(data, method = "center") {
       )
 
     },
+
+    points = {
+
+      xr = range(data$x, na.rm = TRUE)
+      yr = range(data$y, na.rm = TRUE)
+
+      geo <- dplyr::tibble(
+        x = c(xr[1], xr[1], xr[2], xr[2]),
+        y = c(yr[1], yr[2], yr[2], yr[1])
+      )
+
+    },
     stop("Invalid `method` value")
   )
 
   return(geo)
 
 }
+
 
 #' Translate a 2D object
 #' @param data dataframe with x and y coordinates
@@ -133,23 +151,25 @@ buffer_rectangle <- function(
 # geoms ####
 
 #' Render a rectangular frame around a 2D object.
-#' @param data data.frame with x and y columns
+#' @param data data frame with x and y columns, it could be the plotted data or just the limits for the frame.
 #' @param jitter amount of jitter to add to sampled points in the frame
-#' @param expand expansion factor around the object bounding box
+#' @param scaling scaling factor around the object bounding box
 #' @param size,color aesthetics passed to geom_path()
 #' @return a geom_path ggplot layer.
 #' @export
 render_frame <- function(
-    data, jitter = 10, expand = 1.2,
+    data, jitter = 10, scaling = 0.1,
     size = 0.5, color = "black") {
 
-  ggplot2::geom_path(
-    ggplot2::aes(x,y), size = size, color = color,
-    data = purrr::pmap_df(
-      get_box(data),
-      ~ sample_rectangle(
-        x0 = ..1, y0 = ..2, x = ..3, y = ..4,
-        jitter = jitter, expand = expand)
+  # compute frame data
+  data <- purrr::pmap_df(
+    get_box(data),
+    ~ sample_rectangle(
+      x0 = ..1, y0 = ..2, x = ..3, y = ..4,
+      jitter = jitter, scaling = scaling)
     )
-  )
+
+  layer <- ggplot2::geom_path(
+    ggplot2::aes(x,y), data = data, linewidth = size, color = color)
+
 }

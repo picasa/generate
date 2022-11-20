@@ -16,6 +16,7 @@
 #' * "quadratic": edges as quadratic Bezier curves
 #' * "cubic": edges as Cubic Bezier curves
 #' * "arc": edges as arcs
+#' @param lineend shape for line endings.
 #' @param color,width,alpha fixed aesthetic parameters for the ggplot object
 #' @param coord ggplot2 coordinate system object passed to ggplot
 #' @return a ggplot object
@@ -23,8 +24,8 @@
 
 render_graph <- function(
   data, vars = c(x,y),
-  graph = "rng", aes = "default", k = 3, n = 15, strength = 0.5,
-  color = "black", width = 0.5, alpha = 1, coord=NULL) {
+  graph = "rng", k = 3, n = 15, strength = 0.5, aes = "default",
+  lineend = "round", color = "black", width = 0.5, alpha = 1, coord = NULL) {
 
   data <- data |> dplyr::select({{vars}}) |> dplyr::rename(x = 1, y = 2)
 
@@ -73,7 +74,7 @@ render_graph <- function(
       graph |>
         ggraph::ggraph(layout = data) +
         ggraph::geom_edge_link0(
-          edge_width = width, color = color, lineend = "round") +
+          edge_width = width, color = color, lineend = lineend) +
         coord + ggplot2::theme_void()
     },
 
@@ -84,7 +85,7 @@ render_graph <- function(
         ggraph::ggraph(layout = data) +
         ggraph::geom_edge_diagonal(
           n = n, edge_width = width, color = color, alpha = alpha,
-          strength = strength, lineend = "round", linejoin = "round") +
+          strength = strength, lineend = lineend, linejoin = lineend) +
         coord + ggplot2::theme_void()
     },
 
@@ -95,7 +96,7 @@ render_graph <- function(
         ggraph::ggraph(layout = data) +
         ggraph::geom_edge_bend(
           n = n, edge_width = width, color = color, alpha = alpha,
-          strength = strength, lineend = "round", linejoin = "round") +
+          strength = strength, lineend = lineend) +
         coord + ggplot2::theme_void()
 
     },
@@ -108,7 +109,7 @@ render_graph <- function(
         ggraph::geom_edge_arc(
           #aes(alpha = ..index..),
           edge_width = width, color = color, alpha = alpha,
-          n = n, strength = strength) +
+          n = n, strength = strength, lineend = lineend) +
         coord + ggplot2::theme_void()
     },
 

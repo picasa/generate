@@ -269,21 +269,21 @@ render_node <- function(
     path = {
       plot <- data |>
         ggplot2::ggplot(ggplot2::aes(x, y, group = id)) +
-        ggplot2::geom_path(size = 0.5, alpha = 1)
+        ggplot2::geom_path(linewidth = 0.5, alpha = 1)
     },
 
     spline = {
       plot <- data |>
         ggplot2::ggplot(ggplot2::aes(x, y, group = id)) +
-        ggforce::geom_bspline(size = 0.5, alpha = 1)
+        ggforce::geom_bspline(linewidth = 0.5, alpha = 1)
     },
 
     segment = {
       plot <- data |>
         ggplot2::ggplot(ggplot2::aes(x, y, xend = xend, yend = yend, group = id)) +
-        ggplot2::geom_segment(size = 0.5, lineend = "round", alpha = 0.3) +
-        ggplot2::geom_path(size = 0.5, alpha = 1) +
-        ggplot2::geom_path(ggplot2::aes(x=xend, y=yend), size=0.5, alpha = 1)
+        ggplot2::geom_segment(linewidth = 0.5, lineend = "round", alpha = 0.3) +
+        ggplot2::geom_path(linewidth = 0.5, alpha = 1) +
+        ggplot2::geom_path(ggplot2::aes(x=xend, y=yend), linewidth = 0.5, alpha = 1)
     },
 
     polygon = {
@@ -291,7 +291,7 @@ render_node <- function(
         ggplot2::ggplot(ggplot2::aes(x,y, group = id)) +
         ggforce::geom_shape(
           color="black", fill="white",
-          size = 0.5, radius = grid::unit(radius, 'pt'))
+          linewidth = 0.5, radius = grid::unit(radius, 'pt'))
     },
 
     polygon_sf = {

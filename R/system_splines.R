@@ -74,7 +74,7 @@ render_spline <- function(
         ggplot2::ggplot(ggplot2::aes(x, y)) +
         ggforce::geom_bspline(
           lineend = "round", type = type, n = n,
-          color = color, size = width, alpha = alpha)
+          color = color, linewidth = width, alpha = alpha)
     },
 
     v = {
@@ -82,7 +82,7 @@ render_spline <- function(
         ggplot2::ggplot(ggplot2::aes(x = y, y = -x)) +
         ggforce::geom_bspline(
           lineend = "round", type = type, n = n,
-          color = color, size = width, alpha = alpha)
+          color = color, linewidth = width, alpha = alpha)
     },
 
     stop("Invalid `orientation` value")

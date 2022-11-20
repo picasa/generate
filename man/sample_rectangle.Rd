@@ -4,12 +4,12 @@
 \alias{sample_rectangle}
 \title{Sample n point regularly spaced on a rectangle}
 \usage{
-sample_rectangle(n = 200, expand = 1.05, jitter = 1, x0, y0, x, y)
+sample_rectangle(n = 200, scaling = 0, jitter = 10, x0, y0, x, y)
 }
 \arguments{
 \item{n}{number of points}
 
-\item{expand}{expansion factor}
+\item{scaling}{expansion factor}
 
 \item{jitter}{jitter factor}
 

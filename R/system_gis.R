@@ -196,7 +196,8 @@ geom_waterline <- function(
         buffer, shade,
         ~ ggplot2::geom_sf(
           data = data |> sf::st_buffer(.x), # |> st_crop(data),
-          fill = NA, color = colorspace::lighten(color, .y), size = 1/10 * scale)
+          fill = NA, color = colorspace::lighten(color, .y),
+          linewidth = 1/10 * scale)
       ))
 
   return(plot$layers)
@@ -291,15 +292,15 @@ render_contour <- function(
 
       plot_contour_minor <- ggplot2::geom_sf(
         data = layer_contour_minor,
-        color = colorspace::lighten("black", 0.6), size=1/10 * scale)
+        color = colorspace::lighten("black", 0.6), linewidth=1/10 * scale)
 
       plot_contour_major <- ggplot2::geom_sf(
         data = layer_contour_major,
-        color = colorspace::lighten("black", 0.4), size=2/10 * scale)
+        color = colorspace::lighten("black", 0.4), linewidth=2/10 * scale)
 
       plot_shore <- ggplot2::geom_sf(
         data = layer_shore,
-        color="black", size = 4/10 * scale)
+        color="black", linewidth = 4/10 * scale)
 
       coord_box <- ggplot2::coord_sf(xlim=c(bb$xmin, bb$xmax), ylim=c(bb$ymin, bb$ymax))
 
@@ -319,7 +320,7 @@ render_contour <- function(
       plot <- ggplot2::ggplot() +
         ggplot2::geom_sf(
           data = layer_shore,
-          color="black", size = 4/10 * scale) +
+          color="black", linewidth = 4/10 * scale) +
         ggplot2::theme_void()
     },
 
@@ -412,7 +413,5 @@ render_ridge <- function(
 
 }
 
-# filter ridgeline dataframe on line length
-#' @export
 
 
