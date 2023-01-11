@@ -188,7 +188,7 @@ gen_node <- function(
   shape = "spiral", method = "polygon", seed = NULL, ...) {
 
   # set seed if needed
-  if (!missing(seed)) set.seed(seed)
+  if (!is.null(seed)) set.seed(seed)
 
   # iterate collatz function on random starting values
   data <- tibble::tibble(
@@ -261,7 +261,7 @@ gen_node <- function(
 
 render_node <- function(
   data, method = "polygon", radius = 0,
-  xlim=NULL, ylim = NULL, margin = 0) {
+  xlim = NULL, ylim = NULL, margin = 0) {
 
   switch(
     method,
