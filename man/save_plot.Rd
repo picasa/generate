@@ -10,6 +10,7 @@ save_plot(
   path = "R/figures",
   size = c(148, 210),
   format = "jpg",
+  dpi = NULL,
   bg = "#FEFAEE"
 )
 }
@@ -25,10 +26,12 @@ save_plot(
 \item{format}{file format
 \itemize{
 \item png, print quality bitmap output (400 dpi, lossless)
-\item jpg, default bitmap output
+\item jpg, default bitmap output (200 dpi, compressed)
 \item snap, screen quality output (150 dpi, default path)
 \item svg, vector format
 }}
+
+\item{dpi}{resolution (dpi)}
 
 \item{bg}{background color passed to ggsave function}
 }

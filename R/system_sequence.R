@@ -83,7 +83,7 @@ transform_path <- function(data, scale = 1, width = c(0,10), method = "polygon")
         dplyr::mutate(xend = dplyr::lead(x), yend = dplyr::lead(y)) |>
         tidyr::drop_na() |>
         dplyr::mutate(x = x + width[1], y = y + width[2]) |>
-        dplyr::summarise(
+        dplyr::reframe(
           x = c(x, rev(xend), x[1]),
           y = c(y, rev(yend), y[1] - width[2]))
     },
@@ -96,7 +96,7 @@ transform_path <- function(data, scale = 1, width = c(0,10), method = "polygon")
     polygon = {
       path <- data |>
         dplyr::mutate(x = x + width[1], y = y + width[2]) |>
-        dplyr::summarise(
+        dplyr::reframe(
           x = c(x, rev(xend), x[1]),
           y = c(y, rev(yend), y[1] - width[2]))
     },
@@ -106,7 +106,7 @@ transform_path <- function(data, scale = 1, width = c(0,10), method = "polygon")
         dplyr::mutate(
           l = scales::rescale(n, to = c(1,0)),
           x = x + width[1], y = y + width[2] * l) |>
-        dplyr::summarise(
+        dplyr::reframe(
           x = c(x, rev(xend), x[1]),
           y = c(y, rev(yend), y[1] - width[2]))
     },
