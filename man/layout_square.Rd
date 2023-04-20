@@ -4,26 +4,18 @@
 \alias{layout_square}
 \title{Sample n points uniformly in a square}
 \usage{
-layout_square(
-  n = 7,
-  method = "uniform",
-  xlim = c(-1, 1),
-  ylim = c(-1, 1),
-  seed
-)
+layout_square(n = 7, method = "uniform", xlim = c(-1, 1), ylim = c(-1, 1))
 }
 \arguments{
 \item{n}{number of points}
 
 \item{method}{method used to sample the space
 \itemize{
-\item "uniform": basic sampling based on independent uniform distributions for each dimensions.
-\item "sobol": sampling using uniform Sobol low discrepancy sequences from \code{randtoolbox::sobol()}.
+\item "uniform": uniform distributions for each dimensions.
+\item "Halton": Halton low discrepancy sequence from \code{randtoolbox::halton()}.
 }}
 
 \item{xlim, ylim}{x and y limits, default to (-1,1)}
-
-\item{seed}{seed used for the sobol method.}
 }
 \value{
 a dataframe with n, x, and y columns

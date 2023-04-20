@@ -74,7 +74,7 @@ render_graph <- function(
       graph |>
         ggraph::ggraph(layout = data) +
         ggraph::geom_edge_link0(
-          edge_width = width, color = color, lineend = lineend) +
+          edge_width = width, color = color, alpha = alpha, lineend = lineend) +
         coord + ggplot2::theme_void()
     },
 

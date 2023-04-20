@@ -173,11 +173,14 @@ gen_leaf <- function(i, a = 20, x0 = 0, y0 = 0, end = 1, shape = "spiral") {
 #'    * "wave" accumulates angle depending on the parity of the value in the
 #'   sequence.
 #' @param method method used to render the path.
-#' * "spline" fits a b-spline to smooth the initial path.
-#' * "path" shift the initial path according to `width` argument.
-#' * "polygon" builds an oriented polygon from the shifted path.
-#' * "polygon_lm" builds an oriented polygon with decreasing size along path length.
+#'    * "spline" fits a b-spline to smooth the initial path.
+#'    * "path" shift the initial path according to `width` argument.
+#'    * "polygon" builds an oriented polygon from the shifted path.
+#'    * "polygon_lm" builds an oriented polygon with decreasing size along path length.
 #' @param seed value of the random seed, random if missing
+#' @param compute method for node computation.
+#'    * "sequential" adapted for small structures
+#'    * "parallel" adapted for long structure, useless if a higher level of recursion is used.
 #' @param ... used for parallel mapping
 #' @return a dataframe with coordinates of multiple leafs
 #' @export
@@ -185,23 +188,46 @@ gen_leaf <- function(i, a = 20, x0 = 0, y0 = 0, end = 1, shape = "spiral") {
 gen_node <- function(
   n = 20, imin = 20, imax = 70, lmax = 1000, end = 1,
   amin = -20, amax = 20, shift = c(0, 20), width = c(0, 15), scale = 1,
-  shape = "spiral", method = "polygon", seed = NULL, ...) {
+  shape = "spiral", method = "polygon", seed = NULL, compute = "sequential",...) {
 
   # set seed if needed
   if (!is.null(seed)) set.seed(seed)
 
   # iterate collatz function on random starting values
-  data <- tibble::tibble(
-    id = seq_len(n),
-    i = stats::runif(n, imin, imax) |> as.integer(),
-    a = stats::runif(n, amin, amax)) |>
-    dplyr::mutate(
-      path = purrr::map2(i, a, ~ gen_leaf(i = .x, a = .y, end = end, shape = shape)),
-      c_n = purrr::map_int(path, ~ nrow(.)),
-      c_l = purrr::map_dbl(path, ~ sum(.$length))
-    ) |>
-    dplyr::filter(c_l < lmax, a != 0) |>
-    tidyr::unnest(path)
+
+
+  switch(
+    compute,
+
+    sequential = {
+      data <- tibble::tibble(
+        id = seq_len(n),
+        i = stats::runif(n, imin, imax) |> as.integer(),
+        a = stats::runif(n, amin, amax)) |>
+        dplyr::mutate(
+          path = purrr::map2(i, a, ~ gen_leaf(i = .x, a = .y, end = end, shape = shape)),
+          c_n = purrr::map_int(path, ~ nrow(.)),
+          c_l = purrr::map_dbl(path, ~ sum(.$length))
+        ) |>
+        dplyr::filter(c_l < lmax, a != 0) |>
+        tidyr::unnest(path)
+    },
+
+    parallel = {
+      data <- tibble::tibble(
+        id = seq_len(n),
+        i = stats::runif(n, imin, imax) |> as.integer(),
+        a = stats::runif(n, amin, amax)) |>
+        dplyr::mutate(
+          path = furrr::future_map2(i, a, ~ gen_leaf(i = .x, a = .y, end = end, shape = shape)),
+          c_n = purrr::map_int(path, ~ nrow(.)),
+          c_l = purrr::map_dbl(path, ~ sum(.$length))
+        ) |>
+        dplyr::filter(c_l < lmax, a != 0) |>
+        tidyr::unnest(path)
+    },
+    stop("Invalid `compute` value")
+  )
 
   # create an empty output if leaf filtering conditions are too drastic.
   if (nrow(data) != 0) {

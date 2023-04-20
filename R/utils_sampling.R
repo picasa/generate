@@ -4,22 +4,40 @@
 # 1D ####
 # https://en.wikipedia.org/wiki/Low-discrepancy_sequence
 
+#' Create a regular sequence of discrete numbers with noise
+#' @param start,end bounds for the generated sequence
+#' @param n sequence length
+#' @param jitter bounds for the noise distribution
+#' @return a vector of integers
+#' @export
+seq_noise <- function(start, end, n, jitter = 1) {
+
+  # generate regularly spaced numbers
+  samples <- seq(start, end, length.out = n)
+
+  # generate uniform noise
+  noise <- stats::runif(n, -jitter, jitter) |> round()
+
+  # add noise
+  out <- samples + noise
+
+  return(out)
+}
+
 # 2D ####
 
 #' Sample n points uniformly in a square
 #' @param n number of points
 #' @param method method used to sample the space
-#' * "uniform": basic sampling based on independent uniform distributions for each dimensions.
-#' * "sobol": sampling using uniform Sobol low discrepancy sequences from `randtoolbox::sobol()`.
+#' * "uniform": uniform distributions for each dimensions.
+#' * "Halton": Halton low discrepancy sequence from `randtoolbox::halton()`.
 #' @param xlim,ylim x and y limits, default to (-1,1)
-#' @param seed seed used for the sobol method.
 #' @return a dataframe with n, x, and y columns
 #' @export
 #'
 layout_square <- function(
   n = 7, method = "uniform",
-  xlim = c(-1,1), ylim = c(-1,1),
-  seed) {
+  xlim = c(-1,1), ylim = c(-1,1)) {
 
   switch(
     method,
@@ -32,12 +50,14 @@ layout_square <- function(
       )
     },
 
-    sobol = {
-      xlim[1] + (xlim[2] - xlim[1]) *
-        randtoolbox::sobol(n, dim = 2, scrambling = 1, seed = seed) |>
-        tibble::as_tibble() |>
-        dplyr::mutate(n = seq_along(V1)) |>
-        dplyr::select(n, x=V1, y=V2)
+    halton = {
+      randtoolbox::halton(n, dim = 2) |>
+        dplyr::as_tibble() |> dplyr::select(x = 1, y = 2) |>
+        dplyr::mutate(
+          n = seq_along(x),
+          x = scales::rescale(x, to = xlim),
+          y = scales::rescale(y, to = ylim)
+        )
     },
 
     stop("Invalid `method` value")

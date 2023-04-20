@@ -115,15 +115,16 @@ L <- function(f, p, x0, y0, iterations = 1000) {
 #' Normalize xy coordinates
 #' @param data dataframe with x and y coordinates
 #' @param n number of starting iterations to remove
+#' @param scale scaling factor
 #' @return a normalized dataframe with x and y coordinates
 #' @export
 
-normalize_xy <- function(data, n = 100) {
+normalize_xy <- function(data, n = 100, scale = 1) {
 
   # remove outliers (usually in first iterations)
-  data <- data |> dplyr::slice(n = -(1:n))
+  data <- data |> dplyr::slice(-(1:n))
 
-  range <- with(data, max(max(x) - min(x), max(y) - min(y)))
+  range <- with(data, max(max(x) - min(x), max(y) - min(y))) * scale
 
   data |>
     dplyr::mutate(

@@ -18,6 +18,7 @@ gen_node(
   shape = "spiral",
   method = "polygon",
   seed = NULL,
+  compute = "sequential",
   ...
 )
 }
@@ -57,6 +58,12 @@ sequence.
 }}
 
 \item{seed}{value of the random seed, random if missing}
+
+\item{compute}{method for node computation.
+\itemize{
+\item "sequential" adapted for small structures
+\item "parallel" adapted for long structure, useless if a higher level of recursion is used.
+}}
 
 \item{...}{used for parallel mapping}
 }

@@ -4,12 +4,14 @@
 \alias{normalize_xy}
 \title{Normalize xy coordinates}
 \usage{
-normalize_xy(data, n = 100)
+normalize_xy(data, n = 100, scale = 1)
 }
 \arguments{
 \item{data}{dataframe with x and y coordinates}
 
 \item{n}{number of starting iterations to remove}
+
+\item{scale}{scaling factor}
 }
 \value{
 a normalized dataframe with x and y coordinates
