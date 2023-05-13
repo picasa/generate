@@ -2,9 +2,17 @@
 % Please edit documentation in R/utils_sampling.R
 \name{layout_ellipse}
 \alias{layout_ellipse}
-\title{Sample n points in an elliptic area}
+\title{Sample n points in an elliptic area with different spatial repartition.}
 \usage{
-layout_ellipse(n = 7, x0 = 0, y0 = 0, r = 1, a = -pi/6, scale_x = 0.5)
+layout_ellipse(
+  n = 7,
+  x0 = 0,
+  y0 = 0,
+  r = 1,
+  a = -pi/6,
+  scale_x = 0.5,
+  method = "uniform"
+)
 }
 \arguments{
 \item{n}{number of points}
@@ -16,10 +24,18 @@ layout_ellipse(n = 7, x0 = 0, y0 = 0, r = 1, a = -pi/6, scale_x = 0.5)
 \item{a}{rotation angle of the point set (radians)}
 
 \item{scale_x}{scaling coefficient applied on the x axis}
+
+\item{method}{\itemize{
+\item \emph{uniform} Points are sampled from uniform distribution in polar coordinates. The point set is then transformed to cartesian coordinates, scaled, and rotated.
+\itemize{
+\item \emph{gaussian} Points are sampled from a bivariate Gaussian (μ = 0, sd = r)
+\item \emph{spiral} Points are arranged using Fermat's spiral (\href{https://doi.org/10.1016\%2F0025-5564\%2879\%2990080-4}{Vogel, 1979})
+}
+}}
 }
 \value{
 a dataframe with n, x, and y columns
 }
 \description{
-Point are sampled from uniform distribution in polar coordinates. The point set is then transformed to cartesian coordinates, scaled, and rotated.
+Sample n points in an elliptic area with different spatial repartition.
 }

@@ -26,7 +26,7 @@ seq_noise <- function(start, end, n, jitter = 1) {
 
 # 2D ####
 
-#' Sample n points uniformly in a square
+#' Sample n points uniformly in a rectangular area
 #' @param n number of points
 #' @param method method used to sample the space
 #' * "uniform": uniform distributions for each dimensions.
@@ -35,7 +35,7 @@ seq_noise <- function(start, end, n, jitter = 1) {
 #' @return a dataframe with n, x, and y columns
 #' @export
 #'
-layout_square <- function(
+layout_rectangle <- function(
   n = 7, method = "uniform",
   xlim = c(-1,1), ylim = c(-1,1)) {
 
@@ -52,7 +52,7 @@ layout_square <- function(
 
     halton = {
       randtoolbox::halton(n, dim = 2) |>
-        dplyr::as_tibble() |> dplyr::select(x = 1, y = 2) |>
+        magrittr::set_colnames(c("x","y")) |> dplyr::as_tibble() |>
         dplyr::mutate(
           n = seq_along(x),
           x = scales::rescale(x, to = xlim),
@@ -66,8 +66,11 @@ layout_square <- function(
 
 }
 
-#' Sample n points in an elliptic area
-#' @description Point are sampled from uniform distribution in polar coordinates. The point set is then transformed to cartesian coordinates, scaled, and rotated.
+#' Sample n points in an elliptic area with different spatial repartition.
+#' @param method
+#'   * *uniform* Points are sampled from uniform distribution in polar coordinates. The point set is then transformed to cartesian coordinates, scaled, and rotated.
+#'   * *gaussian* Points are sampled from a bivariate Gaussian (μ = 0, sd = r)
+#'   * *spiral* Points are arranged using Fermat's spiral ([Vogel, 1979](https://doi.org/10.1016%2F0025-5564%2879%2990080-4))
 #' @param n number of points
 #' @param x0,y0 coordinates of the center of the sampling area
 #' @param r radius of the sampling area
@@ -77,21 +80,55 @@ layout_square <- function(
 #' @export
 
 layout_ellipse <- function(
-    n = 7, x0 = 0, y0 = 0, r = 1, a = -pi/6, scale_x = 0.5
+    n = 7, x0 = 0, y0 = 0, r = 1, a = -pi/6, scale_x = 0.5, method = "uniform"
   ) {
-  r = sqrt(stats::runif(n, 0, r))
-  theta = stats::runif(n, 0, 2*pi)
 
-  # scale and rotate layout
-  layout <- tibble::tibble(
-    n = 1:n,
-    x0 = x0 + r * cos(theta),
-    y0 = y0 + r * sin(theta)) |>
-    dplyr::mutate(x0 = x0 * scale_x) |>
-    dplyr::mutate(
-      x = x0*cos(a) - y0*sin(a),
-      y = x0*sin(a) + y0*cos(a)) |>
-    dplyr::select(n,x,y)
+  switch (
+    method,
+
+    uniform = {
+
+      r = sqrt(stats::runif(n, 0, r))
+      theta = stats::runif(n, 0, 2*pi)
+
+      # scale and rotate layout
+      layout <- tibble::tibble(
+        n = 1:n,
+        x0 = x0 + r * cos(theta),
+        y0 = y0 + r * sin(theta)) |>
+        dplyr::mutate(x0 = x0 * scale_x) |>
+        dplyr::mutate(
+          x = x0*cos(a) - y0*sin(a),
+          y = x0*sin(a) + y0*cos(a)) |>
+        dplyr::select(n,x,y)
+    },
+
+    gaussian = {
+
+      layout <- MASS::mvrnorm(
+        n = n, mu = c(0,0),
+        Sigma = matrix(c(r, 0, 0, r), ncol = 2)) |>
+        magrittr::set_colnames(c("x","y")) |> dplyr::as_tibble() |>
+        dplyr::mutate(n = 1:n()) |> dplyr::select(n, x, y)
+    },
+
+    # phi = pi * (1 + sqrt(5))
+    spiral = {
+
+      layout <- tibble::tibble(
+        n = 0:(n-1),
+        r = scales::rescale(sqrt(n/100), to = c(0,r)),
+        theta = a * n,
+        x = x0 + r * cos(theta),
+        y = y0 + r * sin(theta)
+      ) |> dplyr::select(n, x, y)
+    },
+
+    stop("Invalid `method` value")
+
+  )
+
+
 
   return(layout)
 }
@@ -137,27 +174,6 @@ sample_rectangle <- function(
     dplyr::mutate(x = jitter(x, jitter), y = jitter(y, jitter))
 
   return(frame)
-
-}
-
-#' Sample n points evenly distributed on a disc
-#' @description Points are arranged using Fermat's spiral ([Vogel, 1979](https://doi.org/10.1016%2F0025-5564%2879%2990080-4))
-#' @param n number of points
-#' @param x0,y0 coordinates of the center of the sampled circle
-#' @param r radius of the sampled circle
-#' @param a angle in polar coordinates (radians)
-#' @return a dataframe with n, x, and y columns
-#' @export
-
-sample_disc <- function(n = 100, x0 = 0, y0 = 0, r = 1, a = pi * (1 + sqrt(5))) {
-
-  tibble::tibble(
-    n = 0:(n-1),
-    r = scales::rescale(sqrt(n/100), to = c(0,r)),
-    theta = a * n,
-    x = x0 + r * cos(theta),
-    y = y0 + r * sin(theta)
-  )
 
 }
 

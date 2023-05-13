@@ -23,7 +23,11 @@ f_square <- function(x, i, o, scale = FALSE) {
 #' @export
 #'
 f_exp <- function(x, k = 1, a = 1, b = 0, scale = FALSE) {
-  if (scale == TRUE) x = scales::rescale(x, to=c(0,1)) else x
+
+  if (scale == TRUE) {
+    x = suppressWarnings(scales::rescale(x, to=c(0,1)))
+    } else x
+
   a * exp(k * x) + b
 }
 
@@ -34,6 +38,11 @@ f_exp <- function(x, k = 1, a = 1, b = 0, scale = FALSE) {
 #' @export
 #'
 f_sig <- function(x, k = 2, a = -2, b = 1, scale = FALSE) {
-  if (scale == TRUE) x = scales::rescale(x, to=c(0,1)) else x
+
+  if (scale == TRUE) {
+    x = suppressWarnings(scales::rescale(x, to = c(0,1)))
+    } else x
+
   a / (1 + exp(k * x)) + b
+
 }
