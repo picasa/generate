@@ -4,7 +4,7 @@
 \alias{tr_rt}
 \title{Rotate then translate a 2D object}
 \usage{
-tr_rt(data, x0, y0, a, id = FALSE)
+tr_rt(data, x0, y0, a, index = NULL)
 }
 \arguments{
 \item{data}{dataframe with x and y coordinates, and id columns}
@@ -13,7 +13,7 @@ tr_rt(data, x0, y0, a, id = FALSE)
 
 \item{a}{rotation angle (radian)}
 
-\item{id}{if TRUE add the id column of the input to the result dataframe}
+\item{index}{string for the index column to be added from the original data}
 }
 \value{
 a dataframe with new coordinates columns

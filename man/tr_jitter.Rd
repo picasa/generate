@@ -4,14 +4,14 @@
 \alias{tr_jitter}
 \title{Add jitter to a 2D object}
 \usage{
-tr_jitter(data, a, id = FALSE)
+tr_jitter(data, a, index = NULL)
 }
 \arguments{
 \item{data}{dataframe with x and y coordinates, and id columns}
 
 \item{a}{jitter amount (units)}
 
-\item{id}{if TRUE add the id column of the input to the result dataframe}
+\item{index}{string for the index column to be added from the original data}
 }
 \value{
 a dataframe with new coordinates columns

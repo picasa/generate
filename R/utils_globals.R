@@ -3,5 +3,5 @@ utils::globalVariables(c(
   "dz", "geometry", "glyph", "i", "id", "l", "layout", "line", "n", "path",
   "pattern", "plot_ld", "position", "r", "s", "shade", "theta", "variation",
   "word", "x", "xend", "xn", "xp", "x_rank", "y", "y_dist", "y_rank", "yend",
-  "z", "zl", "zl_n", "zn", "zs", "z_slope"))
+  "z", "zl", "zl_n", "zn", "zs", "z_slope", ":=", "rotate", "translate"))
 

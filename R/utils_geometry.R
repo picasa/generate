@@ -64,45 +64,48 @@ get_box <- function(data, vars = c("x","y"), method = "center") {
 #' Translate a 2D object
 #' @param data dataframe with x and y coordinates, and id columns
 #' @param x0,y0 shift in x and y axis (units)
-#' @param id if TRUE add the id column of the input to the result dataframe
+#' @param index string for the index column to be added from the original data
 #' @return a dataframe with new coordinates columns
 #' @export
 
-tr_translate <- function(data, x0, y0, id = FALSE) {
+tr_translate <- function(data, x0, y0, index = NULL) {
+
   tr <- ggforce::linear_trans(translate(x0, y0))
+  d_tr <- tibble::tibble(tr$transform(data$x, data$y, x0, y0))
 
-  tibble::tibble(
-    id = {if (id) data$id else NULL},
-    tr$transform(data$x, data$y, x0, y0))
+  if (is.null(index)) {d_tr} else {
+    tibble::tibble("{index}" := dplyr::pull(data, index), d_tr)
+  }
 }
-
 #' Rotate a 2D object
 #' @param data dataframe with x and y coordinates, and id columns
 #' @param a rotation angle (radian)
-#' @param id if TRUE add the id column of the input to the result dataframe
+#' @param index string for the index column to be added from the original data
 #' @return a dataframe with new coordinates columns
 #' @export
 
-tr_rotate <- function(data, a, id = FALSE) {
+tr_rotate <- function(data, a, index = NULL) {
   tr <- ggforce::linear_trans(rotate(a))
 
-  tibble::tibble(
-    id = {if (id) data$id else NULL},
-    tr$transform(data$x, data$y, a))
+  d_tr <- tibble::tibble(tr$transform(data$x, data$y, a))
+
+  if (is.null(index)) {d_tr} else {
+    tibble::tibble("{index}" := dplyr::pull(data, index), d_tr)
+  }
 }
 
 #' Rotate then translate a 2D object
 #' @param data dataframe with x and y coordinates, and id columns
 #' @param x0,y0 shift in x and y axis (units)
 #' @param a rotation angle (radian)
-#' @param id if TRUE add the id column of the input to the result dataframe
+#' @param index string for the index column to be added from the original data
 #' @return a dataframe with new coordinates columns
 #' @export
 
-tr_rt <- function(data, x0, y0, a, id = FALSE) {
+tr_rt <- function(data, x0, y0, a, index = NULL) {
 
   if (nrow(data) > 0) {
-    data |> tr_rotate(a, id) |> tr_translate(x0, y0, id)
+    data |> tr_rotate(a, index) |> tr_translate(x0, y0, index)
   } else {tibble::tibble()}
 
 }
@@ -110,15 +113,18 @@ tr_rt <- function(data, x0, y0, a, id = FALSE) {
 #' Add jitter to a 2D object
 #' @param data dataframe with x and y coordinates, and id columns
 #' @param a jitter amount (units)
-#' @param id if TRUE add the id column of the input to the result dataframe
+#' @param index string for the index column to be added from the original data
 #' @return a dataframe with new coordinates columns
 #' @export
 #'
-tr_jitter <- function(data, a, id = FALSE) {
-  tibble::tibble(
-    id = {if (id) data$id else NULL},
-    dplyr::mutate(data, dplyr::across(x:y, ~ jitter(.x, amount = a))) |> dplyr::select(x,y)
-  )
+tr_jitter <- function(data, a, index = NULL) {
+
+  d_tr <- dplyr::mutate(data, dplyr::across(x:y, ~ jitter(.x, amount = a)))
+
+  if (is.null(index)) {d_tr} else {
+    tibble::tibble("{index}" := dplyr::pull(data, index), d_tr)
+  }
+
 }
 
 

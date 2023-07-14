@@ -4,14 +4,14 @@
 \alias{tr_translate}
 \title{Translate a 2D object}
 \usage{
-tr_translate(data, x0, y0, id = FALSE)
+tr_translate(data, x0, y0, index = NULL)
 }
 \arguments{
 \item{data}{dataframe with x and y coordinates, and id columns}
 
 \item{x0, y0}{shift in x and y axis (units)}
 
-\item{id}{if TRUE add the id column of the input to the result dataframe}
+\item{index}{string for the index column to be added from the original data}
 }
 \value{
 a dataframe with new coordinates columns
