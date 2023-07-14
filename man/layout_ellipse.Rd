@@ -26,11 +26,9 @@ layout_ellipse(
 \item{scale_x}{scaling coefficient applied on the x axis}
 
 \item{method}{\itemize{
-\item \emph{uniform} Points are sampled from uniform distribution in polar coordinates. The point set is then transformed to cartesian coordinates, scaled, and rotated.
-\itemize{
-\item \emph{gaussian} Points are sampled from a bivariate Gaussian (μ = 0, sd = r)
-\item \emph{spiral} Points are arranged using Fermat's spiral (\href{https://doi.org/10.1016\%2F0025-5564\%2879\%2990080-4}{Vogel, 1979})
-}
+\item uniform: Points are sampled from uniform distribution in polar coordinates. The point set is then transformed to cartesian coordinates, scaled, and rotated.
+\item gaussian: Points are sampled from a bivariate Gaussian (μ = 0, sd = r)
+\item spiral: Points are arranged using Fermat's spiral (\href{https://doi.org/10.1016\%2F0025-5564\%2879\%2990080-4}{Vogel, 1979}) (a = pi x (1 + sqrt(5)))
 }}
 }
 \value{

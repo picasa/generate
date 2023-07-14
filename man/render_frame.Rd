@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_geometry.R
 \name{render_frame}
 \alias{render_frame}
-\title{Render a rectangular frame around a 2D object.}
+\title{Render an irregular rectangular frame around a 2D object.}
 \usage{
 render_frame(data, jitter = 10, scaling = 0.1, size = 0.5, color = "black")
 }
@@ -19,5 +19,5 @@ render_frame(data, jitter = 10, scaling = 0.1, size = 0.5, color = "black")
 a geom_path ggplot layer.
 }
 \description{
-Render a rectangular frame around a 2D object.
+Render an irregular rectangular frame around a 2D object.
 }

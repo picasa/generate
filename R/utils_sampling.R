@@ -68,9 +68,9 @@ layout_rectangle <- function(
 
 #' Sample n points in an elliptic area with different spatial repartition.
 #' @param method
-#'   * *uniform* Points are sampled from uniform distribution in polar coordinates. The point set is then transformed to cartesian coordinates, scaled, and rotated.
-#'   * *gaussian* Points are sampled from a bivariate Gaussian (μ = 0, sd = r)
-#'   * *spiral* Points are arranged using Fermat's spiral ([Vogel, 1979](https://doi.org/10.1016%2F0025-5564%2879%2990080-4))
+#' * uniform: Points are sampled from uniform distribution in polar coordinates. The point set is then transformed to cartesian coordinates, scaled, and rotated.
+#' * gaussian: Points are sampled from a bivariate Gaussian (μ = 0, sd = r)
+#' * spiral: Points are arranged using Fermat's spiral ([Vogel, 1979](https://doi.org/10.1016%2F0025-5564%2879%2990080-4)) (a = pi x (1 + sqrt(5)))
 #' @param n number of points
 #' @param x0,y0 coordinates of the center of the sampling area
 #' @param r radius of the sampling area
@@ -108,7 +108,8 @@ layout_ellipse <- function(
       layout <- MASS::mvrnorm(
         n = n, mu = c(0,0),
         Sigma = matrix(c(r, 0, 0, r), ncol = 2)) |>
-        magrittr::set_colnames(c("x","y")) |> dplyr::as_tibble() |>
+        magrittr::set_colnames(c("x","y")) |>
+        dplyr::as_tibble(.name_repair = "unique") |>
         dplyr::mutate(n = 1:n()) |> dplyr::select(n, x, y)
     },
 

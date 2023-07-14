@@ -1,6 +1,21 @@
 
 # geometry ####
 
+#' Set common limits to a list of plots
+#' @param p a list of plots
+#' @return a list of plots with modified limits.
+#' @export
+set_range <- function(p) {
+
+  yr = purrr::map(p, ~layer_scales(..1)$y$get_limits()) |>
+    unlist() |> range()
+
+  xr = purrr::map(p, ~layer_scales(..1)$x$get_limits()) |>
+    unlist() |> range()
+
+  p |> purrr::map(~..1 + xlim(xr) + ylim(yr))
+}
+
 #' Get bounding box from 2D dataframes
 #' @param data dataframe with x and y coordinates
 #' @param vars alternative names for x and y variables (character vector)
@@ -47,40 +62,63 @@ get_box <- function(data, vars = c("x","y"), method = "center") {
 
 
 #' Translate a 2D object
-#' @param data dataframe with x and y coordinates
+#' @param data dataframe with x and y coordinates, and id columns
 #' @param x0,y0 shift in x and y axis (units)
+#' @param id if TRUE add the id column of the input to the result dataframe
 #' @return a dataframe with new coordinates columns
 #' @export
 
-translate <- function(data, x0, y0) {
+tr_translate <- function(data, x0, y0, id = FALSE) {
   tr <- ggforce::linear_trans(translate(x0, y0))
-  tibble::tibble(id = data$id, tr$transform(data$x, data$y, x0, y0))
+
+  tibble::tibble(
+    id = {if (id) data$id else NULL},
+    tr$transform(data$x, data$y, x0, y0))
 }
 
 #' Rotate a 2D object
-#' @param data dataframe with x and y coordinates
+#' @param data dataframe with x and y coordinates, and id columns
 #' @param a rotation angle (radian)
+#' @param id if TRUE add the id column of the input to the result dataframe
 #' @return a dataframe with new coordinates columns
 #' @export
 
-rotate <- function(data, a) {
+tr_rotate <- function(data, a, id = FALSE) {
   tr <- ggforce::linear_trans(rotate(a))
-  tibble::tibble(id = data$id, tr$transform(data$x, data$y, a))
+
+  tibble::tibble(
+    id = {if (id) data$id else NULL},
+    tr$transform(data$x, data$y, a))
 }
 
 #' Rotate then translate a 2D object
-#' @param data dataframe with x and y coordinates
+#' @param data dataframe with x and y coordinates, and id columns
 #' @param x0,y0 shift in x and y axis (units)
 #' @param a rotation angle (radian)
+#' @param id if TRUE add the id column of the input to the result dataframe
 #' @return a dataframe with new coordinates columns
 #' @export
 
-r_t <- function(data, x0, y0, a) {
+tr_rt <- function(data, x0, y0, a, id = FALSE) {
 
   if (nrow(data) > 0) {
-    data |> rotate(a) |> translate(x0, y0)
+    data |> tr_rotate(a, id) |> tr_translate(x0, y0, id)
   } else {tibble::tibble()}
 
+}
+
+#' Add jitter to a 2D object
+#' @param data dataframe with x and y coordinates, and id columns
+#' @param a jitter amount (units)
+#' @param id if TRUE add the id column of the input to the result dataframe
+#' @return a dataframe with new coordinates columns
+#' @export
+#'
+tr_jitter <- function(data, a, id = FALSE) {
+  tibble::tibble(
+    id = {if (id) data$id else NULL},
+    dplyr::mutate(data, dplyr::across(x:y, ~ jitter(.x, amount = a))) |> dplyr::select(x,y)
+  )
 }
 
 
@@ -150,7 +188,7 @@ buffer_rectangle <- function(
 
 # geoms ####
 
-#' Render a rectangular frame around a 2D object.
+#' Render an irregular rectangular frame around a 2D object.
 #' @param data data frame with x and y columns, it could be the plotted data or just the limits for the frame.
 #' @param jitter amount of jitter to add to sampled points in the frame
 #' @param scaling scaling factor around the object bounding box
