@@ -220,37 +220,3 @@ render_frame <- function(
 
 }
 
-# themes ####
-
-#' Customize a theme object with margins, color, and background.
-#' @param output set up background for "paper" or "plotter" output.
-#' @param color background color for paper themes.
-#' @param margin a vector of four numeric values for margins (top, right, bottom, left) in mm.
-#' @return a ggplot theme object
-#' @export
-theme_paper <- function(output = "paper", color = "#FEFAEE", margin = rep(0,4)) {
-
-  switch (
-    output,
-    paper = {
-      theme <- ggplot2::theme(
-        panel.background = ggplot2::element_blank(),
-        panel.border = ggplot2::element_blank(),
-        plot.background = ggplot2::element_rect(fill = color, linewidth = NA, colour = NA),
-        plot.margin = grid::unit(margin, "mm")
-      )
-    },
-
-    plotter = {
-      theme <- ggplot2::theme(
-        panel.background = ggplot2::element_blank(),
-        panel.border = ggplot2::element_blank(),
-        plot.background = ggplot2::element_blank(),
-        plot.margin = grid::unit(margin, "mm")
-      )
-    },
-  )
-
-  return(theme)
-
-}
