@@ -7,9 +7,9 @@
 theme_paper(output = "digital", color = "#FEFAEE", margin = rep(0, 4))
 }
 \arguments{
-\item{output}{set up background for "paper" or "plotter" output.}
+\item{output}{set up theme for "digital" or "plotter".}
 
-\item{color}{background color for paper themes.}
+\item{color}{background color.}
 
 \item{margin}{a vector of four numeric values for margins (top, right, bottom, left) in mm.}
 }

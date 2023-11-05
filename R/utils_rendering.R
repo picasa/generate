@@ -32,8 +32,8 @@ gen_paper <- function(
 # themes ####
 
 #' Customize a theme object with margins, color, and background.
-#' @param output set up background for "paper" or "plotter" output.
-#' @param color background color for paper themes.
+#' @param output set up theme for "digital" or "plotter".
+#' @param color background color.
 #' @param margin a vector of four numeric values for margins (top, right, bottom, left) in mm.
 #' @return a ggplot theme object
 #' @export
