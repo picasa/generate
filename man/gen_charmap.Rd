@@ -2,7 +2,7 @@
 % Please edit documentation in R/system_splines.R
 \name{gen_charmap}
 \alias{gen_charmap}
-\title{Define a map between letters and glyphs}
+\title{Define a map between characters and generated glyphs}
 \usage{
 gen_charmap(
   seed,
@@ -10,6 +10,9 @@ gen_charmap(
   n_control = 4,
   n_tall = 4,
   size_tall = 4,
+  n_merge = 3,
+  n_variation = 10,
+  jitter = 1/5,
   scale = 0.5,
   rotation = -pi/6
 )
@@ -17,7 +20,7 @@ gen_charmap(
 \arguments{
 \item{seed}{random seed for the character map.}
 
-\item{n}{number of letters in the character map. the total length of the character map is n + 3 (addition of ".", ",", "?")}
+\item{n}{number of letters in the character map. The total length of the character map is n + 3 (addition of ".", ",", "?")}
 
 \item{n_control}{number of control points for each glyph}
 
@@ -25,11 +28,17 @@ gen_charmap(
 
 \item{size_tall}{radius of the set of control points for tall glyphs}
 
+\item{n_merge}{number of glyphs concatenated in the modified map}
+
+\item{n_variation}{number of variations of each glyphs in the map}
+
+\item{jitter}{amount of jitter added to each variations}
+
 \item{scale, rotation}{scale (0-1) and rotation (radian) of the set of control points}
 }
 \value{
 a dataframe with a character and layout column (set of control points).
 }
 \description{
-Generate a set of control points for a collection of glyphs mapped to characters
+Generate a set of control points for a collection of glyphs mapped to characters. This initial map is then modified by merging n glyphs into one and adding jitter.
 }

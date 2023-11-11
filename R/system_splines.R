@@ -1,22 +1,109 @@
 
-#' Define a map between letters and glyphs
-#' @description Generate a set of control points for a collection of glyphs mapped to characters
+# sample ####
+
+#' Sample n letters in the R letters set.
+#' @param n number of sampled letters from the `letters` set.
+#' @return a concatenated character string
+#' @export
+#'
+sample_letters <- function(n = 3) {
+  sample(letters, n, replace = TRUE) |> paste0(collapse = "")
+}
+
+
+# generate ####
+
+
+#' Generate plausible text sequences
+#' @param seed random seed for the character sequence.
+#' @param method method used for sequence generation
+#'  * lipsum, generate latin-based text, with the option to subset the text into smaller elements (scale argument).
+#'  * sentence, draw sentences from the Revised List of Phonetically Balanced Sentences [Harvard Sentences](https://www.cs.columbia.edu/~hgs/audio/harvard.html)
+#'  * random, generate random words within a given size range
+#' @param length, number of returned elements.
+#' @param scale scale of the returned elements, for the lipsum method. Control how the generated text is divided into word, sentence, or text.
+#' @param size word size range, for the random method
+#' @return a character string.
+#' @export
+#'
+gen_sequence <- function(
+    seed = NULL, method = "lipsum", scale = "sentence", length = 1, size = 3:6) {
+
+  # set seed for text sequence
+  if (!is.null(seed)) set.seed(seed)
+
+  switch (
+
+    method,
+
+    # generate paragraphs and extract the first n sentences
+    lipsum = {
+
+      string <- stringi::stri_rand_lipsum(
+        n_paragraphs = length, start_lipsum = FALSE)
+
+      seq <- switch (
+        scale,
+
+        "word" = {paste0(string, collapse = " ") |>
+            stringr::word(1:length, sep = stringr::fixed(" "))},
+
+        "sentence" = {
+          paste0(string, collapse = " ") |>
+            stringr::word(1:length, sep = stringr::fixed(". "))},
+
+        "text" = {string},
+
+        stop("Invalid `scale` value")
+      )
+
+    },
+
+    # draw sentences from https://www.cs.columbia.edu/~hgs/audio/harvard.html
+    sentence = {
+      seq <- sentences[sample(1:length(sentences), length)]
+    },
+
+    # generate random words within a given size range
+    random = {
+
+      seq <- stringi::stri_rand_strings(
+        n = length, pattern = "[a-z]",
+        length = sample(size, size = length, replace = TRUE)) |>
+        paste(collapse = " ")
+
+    },
+
+    stop("Invalid `method` value")
+  )
+
+  return(seq)
+
+}
+
+#' Define a map between characters and generated glyphs
+#' @description Generate a set of control points for a collection of glyphs mapped to characters. This initial map is then modified by merging n glyphs into one and adding jitter.
 #' @param seed random seed for the character map.
-#' @param n number of letters in the character map. the total length of the character map is n + 3 (addition of ".", ",", "?")
+#' @param n number of letters in the character map. The total length of the character map is n + 3 (addition of ".", ",", "?")
 #' @param n_control number of control points for each glyph
 #' @param n_tall number of tall glyphs
 #' @param size_tall radius of the set of control points for tall glyphs
+#' @param n_merge number of glyphs concatenated in the modified map
+#' @param n_variation number of variations of each glyphs in the map
+#' @param jitter amount of jitter added to each variations
 #' @param scale,rotation scale (0-1) and rotation (radian) of the set of control points
 #' @return a dataframe with a character and layout column (set of control points).
 #' @export
 #'
 gen_charmap <- function(
     seed, n = 26, n_control = 4, n_tall = 4, size_tall = 4,
+    n_merge = 3, n_variation = 10, jitter = 1/5,
     scale = 0.5, rotation = -pi/6) {
 
   # set seed for charmap
   if (!missing(seed)) set.seed(seed)
 
+  # create an initial character map
   data_map <- tibble::tibble(
     pattern = 1:(n + 3),
     character = c(letters[1:n], ".", ",", "?"),
@@ -27,22 +114,35 @@ gen_charmap <- function(
     dplyr::mutate(layout = purrr::map(
       r, ~ layout_ellipse(n = n_control, r = ., scale_x = scale, a = rotation)))
 
-  return(data_map)
+  # modify the character map by merging n glyphs into one and adding jitter
+  data_glyphs <- data_map |>
+    dplyr::mutate(
+      word = purrr::map_chr(1:n(), ~ sample_letters(n = n_merge)),
+      layout = purrr::map(word, ~ layout_glyph(., data_map, shift = 1))) |>
+    tidyr::crossing(variation = 1:n_variation) |>
+    dplyr::mutate(
+      layout = purrr::map(
+        layout,
+        ~ dplyr::mutate(..1, across(x:y, ~ jitter(., amount = jitter)))))
+
+
+  return(data_glyphs)
 
 }
 
+# layout ####
 
-#' Create a concatenated set of control points from a sequence of characters.
+#' Create a concatenated set of control points (glyph) from a sequence of characters.
 #' @description One glyph is created from n characters, defined by individual sets of control points.
-#' @param word a sequence of characters (string)
+#' @param seq a sequence of characters (string)
 #' @param map a character map generated by `gen_charmap()`
 #' @param shift horizontal shift when concatenating individual sets of control points
 #' @return a dataframe of concatenated sets of control points
 #' @export
 #'
-layout_word <- function(word, map, shift = 1) {
+layout_glyph <- function(seq, map, shift = 1) {
 
-  tibble::tibble(character = stringr::str_split(word, "")[[1]]) |>
+  tibble::tibble(character = stringr::str_split(seq, "")[[1]]) |>
     dplyr::left_join(map, by = "character") |> tidyr::drop_na() |>
     dplyr::mutate(d = seq(0, by = shift, length = dplyr::n())) |>
     dplyr::mutate(
@@ -52,86 +152,41 @@ layout_word <- function(word, map, shift = 1) {
 }
 
 
-#' Render a spline curve from control points
-#' @param data a dataframe with x and y columns defining control points.
-#' @param type control if the spline starts and ends at the terminal control points.
-#' @param n number of points generated for the spline
-#' @param orientation option to rotate the point set 90° clockwise
-#' @param color,width,alpha arguments passed to `geom_bspline()`
-#' @param coord coordinate system passed to `ggplot()`
-#' @return a ggplot object
-#' @export
-#'
-render_spline <- function(
-  data, type = "clamped", n = 100, orientation = "h",
-  color = "black", width = 0.5, alpha = 1, coord = NULL) {
-
-  switch(
-    orientation,
-
-    h = {
-      plot <- data |>
-        ggplot2::ggplot(ggplot2::aes(x, y)) +
-        ggforce::geom_bspline(
-          lineend = "round", type = type, n = n,
-          color = color, linewidth = width, alpha = alpha)
-    },
-
-    v = {
-      plot <- data |>
-        ggplot2::ggplot(ggplot2::aes(x = y, y = -x)) +
-        ggforce::geom_bspline(
-          lineend = "round", type = type, n = n,
-          color = color, linewidth = width, alpha = alpha)
-    },
-
-    stop("Invalid `orientation` value")
-  )
-
-  return(plot + coord + ggplot2::theme_void())
-
-}
-
-
-#' Render a glyph set as a function of a character string and a character map.
-#' @description Emulates script-like writing by juxtaposing glyphs, and adding individual variation.
-#' @param text a long character sequence
+#' Layout a glyph set as a function of a character string and a character map.
+#' @description Emulates text by juxtaposing glyphs, and adding individual variation.
+#' @param seq a character sequence.
 #' @param map a character map generated by `gen_charmap()`
-#' @param length maximum number of glyphs on a line or columns
+#' @param cut maximum number of glyphs on a line or columns
 #' @param scale scaling parameter for individual glyphs
-#' @param n number of data points generated for the spline
 #' @param orientation writing direction (e.g. right to left, top to bottom)
-#' @param coord coordinate system for the output ggplot object
-#' @param color text color
-#' @param size text linewidth
-#' @return a ggplot object.
+#' @return a dataframe with coordinates of glyphs.
 #' @export
 
-render_script <- function(
-    text, map, length = 80, scale = c(2.5, 5), n = 100,
-    orientation = "lrtb", coord = NULL, color = "black", size = 0.3) {
+layout_sequence <- function(
+    seq, map, cut = 80, scale = c(2.5, 5), orientation = "lrtb") {
 
   # split input string to characters
-  seq_chr <- text |> stringr::str_to_lower() |> stringr::str_split("")
+  seq_chr <- seq |> stringr::str_to_lower() |> stringr::str_split("")
 
   # map string characters to glyph layouts, spaces and non-match creates NULL layout
   # select one variation per character.
   string <- dplyr::tibble(glyph = seq_chr[[1]]) |>
     dplyr::mutate(position = 1:dplyr::n(), word = cumsum(glyph == " ")) |>
     dplyr::left_join(
-      map |> dplyr::select(glyph = character, variation, layout), dplyr::join_by(glyph)) |>
+      map |> dplyr::select(glyph = character, variation, layout),
+      dplyr::join_by(glyph), relationship = "many-to-many") |>
     dplyr::slice_sample(n = 1, by = position) |>
     dplyr::filter(!purrr::map_lgl(layout, is.null))
 
   # layout glyphs in 2D by shifting their coordinates
   layout <- string |>
     dplyr::mutate(
-      col = ((position - 1) %% length),
-      row = ((position - 1) %/% length)
+      col = ((position - 1) %% cut),
+      row = ((position - 1) %/% cut)
     ) |>
     dplyr::mutate(layout = purrr::pmap(
       list(layout, col, row),
-      ~ ..1 |> dplyr::mutate(x0 = scale[1] * ..2 + x, y0 = - scale[2] * ..3 + y))) |>
+      ~ dplyr::mutate(..1, x0 = scale[1] * ..2 + x, y0 = - scale[2] * ..3 + y))) |>
     tidyr::unnest(layout)
 
   layout <- switch(
@@ -143,70 +198,78 @@ render_script <- function(
     stop("Invalid `orientation` value")
   )
 
-  plot <- layout |>
-    ggplot2::ggplot(ggplot2::aes(x, y, group = interaction(glyph, position))) +
-    ggforce::geom_bspline(n = n, color = color, linewidth = size) +
+  return(layout)
+
+}
+
+
+#' Layout a glyph set as a function of a character string and a character map.
+#' @description Emulates text by juxtaposing glyphs, and adding individual variation.
+#' @param seq a character sequence.
+#' @param map a character map generated by `gen_charmap()`
+#' @param cut maximum number of glyphs on a line or columns
+#' @param scale scales between glyphs (x) and lines (y)
+#' @param spacing relative space between paragraphs
+#' @param orientation writing direction (e.g. right to left, top to bottom)
+#' @return a dataframe with coordinates of glyphs.
+#' @export
+
+layout_paragraph <- function(
+    seq, map, cut = 80, scale = c(2.5, 5), spacing = 1, orientation = "lrtb") {
+
+  # layout strings as glyph sequences
+  layout <- dplyr::tibble(seq = seq) |>
+    dplyr::mutate(
+      layout = purrr::map(
+        seq, ~ layout_sequence(
+          seq = ..1, map = map, scale = scale, cut = cut, orientation = orientation))
+    )
+
+  # layout sequences as paragraphs
+  p_space <- switch(
+    orientation,
+    "lrtb" = {c(0, spacing)}, "rltb" = {c(0, spacing)},
+    "tbrl" = {c(- spacing, 0)}, "tblr" = {c(spacing, 0)},
+    stop("Invalid `orientation` value")
+  )
+
+  layout <- layout |>
+    dplyr::mutate(
+      section = 0:(n()-1),
+      line = ceiling(stringr::str_length(seq) / cut) |> cumsum(),
+      shift = dplyr::lag(line, default = 0) * scale[2],
+      layout = purrr::map2(
+        layout, shift,
+        ~ dplyr::mutate(..1, x = ..2 * p_space[1] + x, y = - ..2 * p_space[2] + y))
+    )
+
+  return(layout)
+
+}
+
+# render ####
+
+#' Render a spline curve from control points
+#' @param data a dataframe with x and y columns defining control points, and a "group" column defining grouping.
+#' @param type Either 'clamped' (default) or 'open'. Ensures the spline starts and ends at the terminal control points.
+#' @param n number of points generated for the spline
+#' @param color,width,alpha arguments passed to `geom_bspline()`
+#' @param coord coordinate system passed to `ggplot()`
+#' @return a ggplot object
+#' @export
+#'
+render_spline <- function(
+    data, type = "clamped", n = 100,
+    color = "black", width = 0.5, alpha = 1, coord = NULL) {
+
+  plot <- data |>
+    ggplot2::ggplot(ggplot2::aes(x, y, group = group)) +
+    ggforce::geom_bspline(
+      lineend = "round", type = type, n = n,
+      color = color, linewidth = width, alpha = alpha) +
     coord + ggplot2::theme_void()
 
   return(plot)
 
 }
 
-
-
-#' Render a line of glyphs
-#' @param data a list of glyphs as ggplot objects
-#' @param ncol maximum number of glyphs on a line
-#' @param scale scaling parameter for individual glyphs
-#' @export
-
-render_line <- function(data, ncol = 80, scale = 0.9) {
-  cowplot::plot_grid(
-    plotlist = c(data$plot, list(NULL)),
-    rel_widths = c(data$length, ncol - sum(data$length)),
-    ncol = nrow(data) + 1, scale = scale) +
-    ggplot2::theme(plot.margin = grid::unit(c(2,0,2,0), "mm"))
-}
-
-
-#' Render a glyph set as a function of a character string and a character map.
-#' @description Emulates cursive-like writing by concatenating glyphs.
-#' @param text a long character sequence
-#' @param map a character map generated by `gen_charmap()`
-#' @param ncol maximum number of characters per line.
-#' @param shift horizontal shift when concatenating individual sets of control points
-#' @param color,size color and size of the spline used to draw glyphs
-#' @param n_points number of points generated for the spline
-#' @param scale scaling parameter applied on individual lines fo glyphs
-#' @return a ggplot object
-#' @export
-#'
-render_cursive <- function(
-  text, map, ncol = 80, shift = 1,
-  color = "black", size = 0.5, n_points = 200, scale = 0.8) {
-  # split text to words
-  seq <- text |> stringr::str_to_lower() |> stringr::str_split(" ")
-
-  # generate words from glyph concatenation
-  # define line as groups of words of given cumulative length
-  words <- tibble::tibble(word = seq[[1]]) |>
-    dplyr::mutate(
-      position = seq_along(word),
-      length = stringr::str_length(word),
-      cl = purrr::accumulate(length, ~ dplyr::if_else(.x > ncol, .y, .x + .y)),
-      line = ifelse(dplyr::lag(cl, default = 0) > ncol, 1, 0) |> cumsum()
-      ) |>
-    dplyr::mutate(
-      glyph = purrr::map(word, ~ layout_word(., map = map, shift = shift)),
-      plot = purrr::map(
-        glyph, ~ render_spline(
-          ..1, color = color, width = size, n = n_points, type = "open")
-        )
-    )
-
-  lines <- words |>
-    dplyr::group_by(line) |> tidyr::nest() |>
-    dplyr::mutate(plot = purrr::map(data, ~ render_line(., ncol, scale = scale)))
-
-  cowplot::plot_grid(plotlist = lines$plot, nrow = nrow(lines), scale = scale)
-}

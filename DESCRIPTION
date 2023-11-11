@@ -34,6 +34,7 @@ Suggests:
     sf,
     scales,
     stars,
+    stringi,
     stringr,
     tibble,
     tidygraph,

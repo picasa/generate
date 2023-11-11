@@ -8,7 +8,6 @@ render_spline(
   data,
   type = "clamped",
   n = 100,
-  orientation = "h",
   color = "black",
   width = 0.5,
   alpha = 1,
@@ -16,13 +15,11 @@ render_spline(
 )
 }
 \arguments{
-\item{data}{a dataframe with x and y columns defining control points.}
+\item{data}{a dataframe with x and y columns defining control points, and a "group" column defining grouping.}
 
-\item{type}{control if the spline starts and ends at the terminal control points.}
+\item{type}{Either 'clamped' (default) or 'open'. Ensures the spline starts and ends at the terminal control points.}
 
 \item{n}{number of points generated for the spline}
-
-\item{orientation}{option to rotate the point set 90° clockwise}
 
 \item{color, width, alpha}{arguments passed to \code{geom_bspline()}}
 
