@@ -11,7 +11,7 @@ render_spline(
   color = "black",
   width = 0.5,
   alpha = 1,
-  coord = NULL
+  coord = ggplot2::coord_fixed()
 )
 }
 \arguments{
@@ -23,7 +23,7 @@ render_spline(
 
 \item{color, width, alpha}{arguments passed to \code{geom_bspline()}}
 
-\item{coord}{coordinate system passed to \code{ggplot()}}
+\item{coord}{coordinate system passed to \code{ggplot()}, default to coord_fixed()}
 }
 \value{
 a ggplot object

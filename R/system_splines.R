@@ -14,20 +14,22 @@ sample_letters <- function(n = 3) {
 # generate ####
 
 
-#' Generate plausible text sequences
+#' Generate text sequences with various properties.
 #' @param seed random seed for the character sequence.
 #' @param method method used for sequence generation
-#'  * lipsum, generate latin-based text, with the option to subset the text into smaller elements (scale argument).
-#'  * sentence, draw sentences from the Revised List of Phonetically Balanced Sentences [Harvard Sentences](https://www.cs.columbia.edu/~hgs/audio/harvard.html)
-#'  * random, generate random words within a given size range
-#' @param length, number of returned elements.
-#' @param scale scale of the returned elements, for the lipsum method. Control how the generated text is divided into word, sentence, or text.
-#' @param size word size range, for the random method
+#'  * lipsum, generate long sentences latin-based text, with the option to subset the text into smaller elements (scale argument).
+#'  * sentence, draw short sentences of comparable length from the Revised List of Phonetically Balanced Sentences [Harvard Sentences](https://www.cs.columbia.edu/~hgs/audio/harvard.html)
+#'  * random, recurvively generate sentences from random length, with words of given size range by randomly sampling letters.
+#' @param scale scale of the returned elements, for the lipsum method. Control how the generated text is
+#' divided into word, sentence, or paragraph.
+#' @param n_paragraph,n_sentence,n_word,n_chr number of elements at each organizational level, i.e. number of paragraphs, sentences, words, and characters. The last two levels can be specified as a vector of length to sample in.
 #' @return a character string.
 #' @export
 #'
 gen_sequence <- function(
-    seed = NULL, method = "lipsum", scale = "sentence", length = 1, size = 3:6) {
+    seed = NULL, method = "lipsum", scale = "sentence",
+    n_paragraph = 1, n_sentence = 1, n_word = 3:5, n_chr = 3:8
+    ) {
 
   # set seed for text sequence
   if (!is.null(seed)) set.seed(seed)
@@ -40,19 +42,20 @@ gen_sequence <- function(
     lipsum = {
 
       string <- stringi::stri_rand_lipsum(
-        n_paragraphs = length, start_lipsum = FALSE)
+        n_paragraphs = n_paragraph, start_lipsum = FALSE)
 
       seq <- switch (
         scale,
 
-        "word" = {paste0(string, collapse = " ") |>
-            stringr::word(1:length, sep = stringr::fixed(" "))},
+        "word" = {
+          paste0(string, collapse = " ") |>
+            stringr::word(1:n_word[1], sep = stringr::fixed(" "))},
 
         "sentence" = {
           paste0(string, collapse = " ") |>
-            stringr::word(1:length, sep = stringr::fixed(". "))},
+            stringr::word(1:n_sentence, sep = stringr::fixed(". "))},
 
-        "text" = {string},
+        "paragraph" = {string},
 
         stop("Invalid `scale` value")
       )
@@ -61,17 +64,16 @@ gen_sequence <- function(
 
     # draw sentences from https://www.cs.columbia.edu/~hgs/audio/harvard.html
     sentence = {
-      seq <- sentences[sample(1:length(sentences), length)]
+      seq <- sentences[sample(1:length(sentences), n_sentence)]
     },
 
-    # generate random words within a given size range
+    # generate sentences containing random words within a given size range
     random = {
 
-      seq <- stringi::stri_rand_strings(
-        n = length, pattern = "[a-z]",
-        length = sample(size, size = length, replace = TRUE)) |>
-        paste(collapse = " ")
-
+      seq <- purrr::map(1:n_sentence,
+                 ~  purrr::map(sample(n_chr, sample(n_word, 1), replace = TRUE),
+                        ~ sample_letters(n = .)) |> paste(collapse = " ")
+                 ) |> purrr::list_c()
     },
 
     stop("Invalid `method` value")
@@ -254,13 +256,13 @@ layout_paragraph <- function(
 #' @param type Either 'clamped' (default) or 'open'. Ensures the spline starts and ends at the terminal control points.
 #' @param n number of points generated for the spline
 #' @param color,width,alpha arguments passed to `geom_bspline()`
-#' @param coord coordinate system passed to `ggplot()`
+#' @param coord coordinate system passed to `ggplot()`, default to coord_fixed()
 #' @return a ggplot object
 #' @export
 #'
 render_spline <- function(
     data, type = "clamped", n = 100,
-    color = "black", width = 0.5, alpha = 1, coord = NULL) {
+    color = "black", width = 0.5, alpha = 1, coord = ggplot2::coord_fixed()) {
 
   plot <- data |>
     ggplot2::ggplot(ggplot2::aes(x, y, group = group)) +

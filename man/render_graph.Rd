@@ -47,7 +47,7 @@ roughly defines the human perception of the shape of the point set.
 \item "arc": edges as arcs
 }}
 
-\item{lineend}{shape for line endings.}
+\item{lineend}{Line end style (round, butt, square).}
 
 \item{color, width, alpha}{fixed aesthetic parameters for the ggplot object}
 

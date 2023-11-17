@@ -16,7 +16,7 @@
 #' * "quadratic": edges as quadratic Bezier curves
 #' * "cubic": edges as Cubic Bezier curves
 #' * "arc": edges as arcs
-#' @param lineend shape for line endings.
+#' @param lineend Line end style (round, butt, square).
 #' @param color,width,alpha fixed aesthetic parameters for the ggplot object
 #' @param coord ggplot2 coordinate system object passed to ggplot
 #' @return a ggplot object
