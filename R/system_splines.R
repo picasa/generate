@@ -53,7 +53,7 @@ gen_sequence <- function(
 
         "sentence" = {
           paste0(string, collapse = " ") |>
-            stringr::word(1:n_sentence, sep = stringr::fixed(". "))},
+            stringr::word(1:n_sentence[1], sep = stringr::fixed(". "))},
 
         "paragraph" = {string},
 

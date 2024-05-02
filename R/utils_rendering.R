@@ -1,4 +1,6 @@
 
+# rendering ####
+
 #' Generate a paper texture based on small fibers
 #' @param n texture density
 #' @param jitter length of texture elements
@@ -58,6 +60,8 @@ theme_paper <- function(output = "digital", color = "#FEFAEE", margin = rep(0,4)
         plot.margin = grid::unit(margin, "mm")
       )
     },
+
+    stop("Invalid `output` value")
   )
 
   return(theme)
