@@ -4,7 +4,14 @@
 \alias{layout_sequence}
 \title{Layout a glyph set as a function of a character string and a character map.}
 \usage{
-layout_sequence(seq, map, cut = 80, scale = c(2.5, 5), orientation = "lrtb")
+layout_sequence(
+  seq,
+  map,
+  cut = 80,
+  scale = c(2.5, 5),
+  noise = c(0, 0),
+  orientation = "lrtb"
+)
 }
 \arguments{
 \item{seq}{a character sequence.}
@@ -14,6 +21,8 @@ layout_sequence(seq, map, cut = 80, scale = c(2.5, 5), orientation = "lrtb")
 \item{cut}{maximum number of glyphs on a line or columns}
 
 \item{scale}{scaling parameter for individual glyphs}
+
+\item{noise}{random spacing between characters (sd) and words (mean, sd)}
 
 \item{orientation}{writing direction (e.g. right to left, top to bottom)}
 }

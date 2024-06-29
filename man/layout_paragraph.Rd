@@ -9,6 +9,7 @@ layout_paragraph(
   map,
   cut = 80,
   scale = c(2.5, 5),
+  noise = c(0, 0),
   spacing = 1,
   orientation = "lrtb"
 )
@@ -21,6 +22,8 @@ layout_paragraph(
 \item{cut}{maximum number of glyphs on a line or columns}
 
 \item{scale}{scales between glyphs (x) and lines (y)}
+
+\item{noise}{random spacing between characters (sd) and words (mean, sd)}
 
 \item{spacing}{relative space between paragraphs}
 
