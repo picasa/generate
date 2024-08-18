@@ -24,6 +24,41 @@ seq_noise <- function(start, end, n, jitter = 1) {
   return(out)
 }
 
+#' Sample and replace values with NA in a vector
+#' @param x,y input vectors
+#' @param p proportion of missing values (0,1)
+#' @param method method from sampling values
+#' @return a vector with missing values.
+#' @export
+
+sample_missing <- function(x, y = NULL, p, method = "random") {
+
+  n <- length(x)
+
+  switch(
+    method,
+
+    random = {
+      s <- sample(1:n, size = p * n)
+      x[s] <- NA
+      return(x)
+    },
+
+    along = {
+      #y <- scales::rescale(y, to = c(1, n))
+      s <- truncnorm::rtruncnorm(
+        n = p * n, a = 0, b = n,
+        mean = mean(y), sd = stats::sd(y))
+      #s <- scales::rescale(s, to = c(1, n))
+      x[s] <- NA
+      return(x)
+    },
+
+    stop("Invalid `method` value")
+  )
+}
+
+
 # 2D ####
 
 #' Sample n points uniformly in a rectangular area
@@ -178,39 +213,34 @@ sample_rectangle <- function(
 
 }
 
-#' Sample and replace values with NA in a vector
-#' @param x,y input vectors
-#' @param p proportion of missing values (0,1)
-#' @param method method from sampling values
-#' @return a vector with missing values.
+
+#' Sample a rectangular area defined by its relative size and aspect ratio nested in a larger area.
+#' @param xlim,ylim limits of the larger sampling area
+#' @param r aspect ratio of the small sampled area
+#' @param p proportion of the small sampled area (relative length)
 #' @export
+sample_box <- function(xlim = c(-1, 1), ylim = c(-1, 1), r = 0.7, p = 0.2) {
 
-sample_missing <- function(x, y = NULL, p, method = "random") {
+  # define box dimensions
+  if (r > 1) {
+    h <- p * abs(ylim[2] - ylim[1])
+    w <- h * r
+  } else {
+    w <- p * abs(xlim[2] - xlim[1])
+    h <- w / r
+  }
 
-  n <- length(x)
+  # sample a random middle point within a safe range
+  center <- c(stats::runif(1, xlim[1] + (w / 2), xlim[2] - (w / 2)),
+              stats::runif(1, ylim[1] + (h / 2), ylim[2] - (h / 2)))
 
-  switch(
-    method,
+  # calculate the limits, ensuring they stay within the sampling area
+  box_xlim <- c(center[1] - w / 2, center[1] + w / 2)
+  box_ylim <- c(center[2] - h / 2, center[2] + h / 2)
 
-    random = {
-      s <- sample(1:n, size = p * n)
-      x[s] <- NA
-      return(x)
-    },
-
-    along = {
-      #y <- scales::rescale(y, to = c(1, n))
-      s <- truncnorm::rtruncnorm(
-        n = p * n, a = 0, b = n,
-        mean = mean(y), sd = stats::sd(y))
-      #s <- scales::rescale(s, to = c(1, n))
-      x[s] <- NA
-      return(x)
-    },
-
-    stop("Invalid `method` value")
-  )
+  return(list(xlim = box_xlim, ylim = box_ylim))
 }
+
 
 #' Sample equidistant points on the perimeter of l concentric circles of r radius
 #' @param x0,y0 coordinates of the center of the concentric circles
