@@ -90,7 +90,7 @@ index_group <- function(x, k = NULL, length = NULL, method) {
     "quantiles" = {
       probs <- seq(0, (k-2)/(k-1), len = k-1)
       noise <- stats::runif(k-1, 1/(4*k), 1/k)
-      breaks <- c(min(x), stats::quantile(x, p = probs + noise), max(x))
+      breaks <- c(min(x), stats::quantile(x, p = probs + noise), max(x)) |> unique()
       index <- ggplot2::cut_interval(x, n = k-1, breaks = breaks, labels = FALSE)
     },
 

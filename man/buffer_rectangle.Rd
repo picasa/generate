@@ -17,9 +17,9 @@ buffer_rectangle(
 \arguments{
 \item{data}{sf point object}
 
-\item{size}{size of the largest dimension of the bounding box (units)}
+\item{size}{size of the largest dimension of the bounding box. a vector of length 2 (width, height) ignores the orientation and ratio parameters}
 
-\item{x_shift, y_shift}{shifts in the x and y direction (units)}
+\item{x_shift, y_shift}{shifts in the x and y direction}
 
 \item{orientation}{orientation of the bounding box ("h" or "v")}
 

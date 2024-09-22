@@ -160,8 +160,8 @@ as_sf_polygon <- function(data) {
 
 #' Define a rectangle bounding box with a given ratio around a location
 #' @param data sf point object
-#' @param size size of the largest dimension of the bounding box (units)
-#' @param x_shift,y_shift shifts in the x and y direction (units)
+#' @param size size of the largest dimension of the bounding box. a vector of length 2 (width, height) ignores the orientation and ratio parameters
+#' @param x_shift,y_shift shifts in the x and y direction
 #' @param orientation orientation of the bounding box ("h" or "v")
 #' @param ratio height:width ratio
 #' @param ... used for mapping
@@ -169,23 +169,29 @@ as_sf_polygon <- function(data) {
 #' @export
 
 buffer_rectangle <- function(
-  data, size = 60000, x_shift=0, y_shift=0,
-  orientation="h", ratio = 297/210, ...){
+  data, size = 60000, x_shift = 0, y_shift = 0,
+  orientation = "h", ratio = 297/210, ...){
 
-  switch(
-    orientation,
+  #
+  if (length(size) == 1) {
+    switch(
+      orientation,
 
+      h = {
+        x_size = size / 2
+        y_size = (size / ratio) / 2},
 
-    h = {
-      x_size = size / 2
-      y_size = (size / ratio) / 2},
+      v = {
+        x_size = (size / ratio) / 2
+        y_size = size / 2},
 
-    v = {
-      x_size = (size / ratio) / 2
-      y_size = size / 2},
+      stop("Invalid `orientation` value")
+    )
+  } else {
+    x_size = size[1] / 2
+    y_size = size[2] / 2
+  }
 
-    stop("Invalid `orientation` value")
-  )
 
   sf::st_bbox(data) +
     c(- x_size, - y_size, x_size, y_size) +
