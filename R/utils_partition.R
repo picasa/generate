@@ -62,6 +62,15 @@ partition <- function(k = 1:3, n = 6, sample = TRUE) {
 
 # Index ####
 
+#' Round down the maximum value of x to the nearest multiple of accuracy
+#' @param x, numeric value or vector
+#' @param accuracy, integer number defining the rounding limit
+#' @return integer value
+#' @export
+round_near <- function(x, accuracy) {
+  (max(x) %/% accuracy) * accuracy
+}
+
 #' Create group index by partitioning a vector.
 #' @param x vector to index
 #' @param k, number of group, integer

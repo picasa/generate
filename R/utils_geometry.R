@@ -198,6 +198,20 @@ buffer_rectangle <- function(
     c(x_shift, y_shift, x_shift, y_shift)
 }
 
+#' Crop a raster (stars format) to a given bounding box
+#' @param raster, input raster (stars)
+#' @param point, centroid of the cropping region. point and raster CRS must be identical (sf).
+#' @param size, dimensions defining the cropping bounding box (x,y numerical vector)
+#' @return xyz dataframe of the cropped region
+#' @export
+crop_rectangle <- function(raster, point, size) {
+
+  crop <- buffer_rectangle(point, size = size) %>% sf::st_crop(raster, .)
+
+  return(crop |> dplyr::as_tibble() |> dplyr::select(x, y, z = 3))
+}
+
+
 # geoms ####
 
 #' Render an irregular rectangular frame around a 2D object.
