@@ -79,6 +79,7 @@ round_near <- function(x, accuracy) {
 #' * fixed, fixed size groups, remainder creates an incomplete group
 #' * quantiles, breaks are defined by quantile probabilities as a function of group number and noise
 #' * random, breaks are randomly sampled in the vector range as a function of group number.
+#' * hclust, are defined by 1D hierarchical clustering.
 #' @return a vector of indices of the same length as x
 #' @export
 
@@ -107,6 +108,10 @@ index_group <- function(x, k = NULL, length = NULL, method) {
     "random" = {
       breaks = c(min(x), sample(min(x):max(x), k-1), max(x)) |> sort() |> unique()
       index <- ggplot2::cut_interval(x, n = k-1, breaks = breaks, labels = FALSE)
+    },
+
+    "hclust" = {
+      index <- x |> stats::dist() |> stats::hclust() |> stats::cutree(k = k)
     },
 
     stop("Invalid `method` value")

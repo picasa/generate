@@ -2,12 +2,13 @@
 # sample ####
 
 #' Sample n letters in the R letters set.
-#' @param n number of sampled letters from the `letters` set.
+#' @param n number of sampled elements
+#' @param x set of letters to sample from
 #' @return a concatenated character string
 #' @export
 #'
-sample_letters <- function(n = 3) {
-  sample(letters, n, replace = TRUE) |> paste0(collapse = "")
+sample_letters <- function(n = 3, x = letters) {
+  sample(x, n, replace = TRUE) |> paste0(collapse = "")
 }
 
 
@@ -119,7 +120,7 @@ gen_charmap <- function(
   # modify the character map by merging n glyphs into one and adding jitter
   data_glyphs <- data_map |>
     dplyr::mutate(
-      word = purrr::map_chr(1:n(), ~ sample_letters(n = n_merge)),
+      word = purrr::map_chr(1:n(), ~ sample_letters(n = n_merge, x = letters[1:n])),
       layout = purrr::map(word, ~ layout_glyph(., data_map, shift = 1))) |>
     tidyr::crossing(variation = 1:n_variation) |>
     dplyr::mutate(

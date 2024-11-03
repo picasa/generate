@@ -18,6 +18,7 @@ index_group(x, k = NULL, length = NULL, method)
 \item fixed, fixed size groups, remainder creates an incomplete group
 \item quantiles, breaks are defined by quantile probabilities as a function of group number and noise
 \item random, breaks are randomly sampled in the vector range as a function of group number.
+\item hclust, are defined by 1D hierarchical clustering.
 }}
 }
 \value{

@@ -4,10 +4,12 @@
 \alias{sample_letters}
 \title{Sample n letters in the R letters set.}
 \usage{
-sample_letters(n = 3)
+sample_letters(n = 3, x = letters)
 }
 \arguments{
-\item{n}{number of sampled letters from the \code{letters} set.}
+\item{n}{number of sampled elements}
+
+\item{x}{set of letters to sample from}
 }
 \value{
 a concatenated character string
