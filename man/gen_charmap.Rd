@@ -37,7 +37,7 @@ gen_charmap(
 \item{scale, rotation}{scale (0-1) and rotation (radian) of the set of control points}
 }
 \value{
-a dataframe with a character and layout column (set of control points).
+a list-column dataframe with a character and layout column (set of control points).
 }
 \description{
 Generate a set of control points for a collection of glyphs mapped to characters. This initial map is then modified by merging n glyphs into one and adding jitter.

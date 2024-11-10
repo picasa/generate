@@ -95,7 +95,7 @@ gen_sequence <- function(
 #' @param n_variation number of variations of each glyphs in the map
 #' @param jitter amount of jitter added to each variations
 #' @param scale,rotation scale (0-1) and rotation (radian) of the set of control points
-#' @return a dataframe with a character and layout column (set of control points).
+#' @return a list-column dataframe with a character and layout column (set of control points).
 #' @export
 #'
 gen_charmap <- function(
@@ -117,6 +117,10 @@ gen_charmap <- function(
     dplyr::mutate(layout = purrr::map(
       r, ~ layout_ellipse(n = n_control, r = ., scale_x = scale, a = rotation)))
 
+  # add a base layout for whitespace
+  layout_blank <- dplyr::tibble(n = 1, x = 0, y = 0, group = NA)
+  data_blank <- dplyr::tibble(character = " ", layout = list(layout_blank), variation = 1)
+
   # modify the character map by merging n glyphs into one and adding jitter
   data_glyphs <- data_map |>
     dplyr::mutate(
@@ -126,8 +130,8 @@ gen_charmap <- function(
     dplyr::mutate(
       layout = purrr::map(
         layout,
-        ~ dplyr::mutate(..1, across(x:y, ~ jitter(., amount = jitter)))))
-
+        ~ dplyr::mutate(..1, across(x:y, ~ jitter(., amount = jitter))))) |>
+    dplyr::bind_rows(data_blank)
 
   return(data_glyphs)
 
@@ -259,10 +263,10 @@ layout_paragraph <- function(
 
 # render ####
 
-#' Render a spline curve from control points
-#' @param data a dataframe with x and y columns defining control points, and a "group" column defining grouping.
+#' Render spline curves from control points and grouping indices.
+#' @param data a dataframe with x and y columns defining control points, and *group* and *glyph* columns defining grouping structure.
 #' @param type Either 'clamped' (default) or 'open'. Ensures the spline starts and ends at the terminal control points.
-#' @param n number of points generated for the spline
+#' @param n number of points generated for the spline curve.
 #' @param color,width,alpha arguments passed to `geom_bspline()`
 #' @param coord coordinate system passed to `ggplot()`, default to coord_fixed()
 #' @return a ggplot object
@@ -272,12 +276,15 @@ render_spline <- function(
     data, type = "clamped", n = 100,
     color = "black", width = 0.5, alpha = 1, coord = ggplot2::coord_fixed()) {
 
-  plot <- data |>
-    ggplot2::ggplot(ggplot2::aes(x, y, group = group)) +
+  # glyphs mapped to whitespace are not drawed, but plot limits account for them
+  plot <- ggplot2::ggplot() +
     ggforce::geom_bspline(
+      data = data |> dplyr::filter(glyph != " "),
+      ggplot2::aes(x, y, group = group),
       lineend = "round", type = type, n = n,
       color = color, linewidth = width, alpha = alpha) +
-    coord + ggplot2::theme_void()
+    coord + ggplot2::lims(x = range(data$x), y = range(data$y)) +
+    ggplot2::theme_void()
 
   return(plot)
 

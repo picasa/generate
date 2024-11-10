@@ -2,7 +2,7 @@
 % Please edit documentation in R/system_splines.R
 \name{render_spline}
 \alias{render_spline}
-\title{Render a spline curve from control points}
+\title{Render spline curves from control points and grouping indices.}
 \usage{
 render_spline(
   data,
@@ -15,11 +15,11 @@ render_spline(
 )
 }
 \arguments{
-\item{data}{a dataframe with x and y columns defining control points, and a "group" column defining grouping.}
+\item{data}{a dataframe with x and y columns defining control points, and \emph{group} and \emph{glyph} columns defining grouping structure.}
 
 \item{type}{Either 'clamped' (default) or 'open'. Ensures the spline starts and ends at the terminal control points.}
 
-\item{n}{number of points generated for the spline}
+\item{n}{number of points generated for the spline curve.}
 
 \item{color, width, alpha}{arguments passed to \code{geom_bspline()}}
 
@@ -29,5 +29,5 @@ render_spline(
 a ggplot object
 }
 \description{
-Render a spline curve from control points
+Render spline curves from control points and grouping indices.
 }
