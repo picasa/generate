@@ -101,7 +101,7 @@ gen_sequence <- function(
 gen_charmap <- function(
     seed, n = 26, n_control = 4, n_tall = 4, size_tall = 4,
     n_merge = 3, n_variation = 10, jitter = 1/5,
-    scale = 0.5, rotation = -pi/6) {
+    scale = 0.5, rotation = -pi/6, sp = TRUE) {
 
   # set seed for charmap
   if (!missing(seed)) set.seed(seed)
@@ -118,7 +118,7 @@ gen_charmap <- function(
       r, ~ layout_ellipse(n = n_control, r = ., scale_x = scale, a = rotation)))
 
   # add a base layout for whitespace
-  layout_blank <- dplyr::tibble(n = 1, x = 0, y = 0, group = NA)
+  layout_blank <- dplyr::tibble(n = 1, x = 0, y = 0, group = NA, character = NA)
   data_blank <- dplyr::tibble(character = " ", layout = list(layout_blank), variation = 1)
 
   # modify the character map by merging n glyphs into one and adding jitter
@@ -130,10 +130,11 @@ gen_charmap <- function(
     dplyr::mutate(
       layout = purrr::map(
         layout,
-        ~ dplyr::mutate(..1, across(x:y, ~ jitter(., amount = jitter))))) |>
-    dplyr::bind_rows(data_blank)
+        ~ dplyr::mutate(..1, across(x:y, ~ jitter(., amount = jitter)))))
 
-  return(data_glyphs)
+  map <- if (sp) {dplyr::bind_rows(data_glyphs, data_blank)} else {data_glyphs}
+
+  return(map)
 
 }
 
