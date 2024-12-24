@@ -14,7 +14,8 @@ gen_charmap(
   n_variation = 10,
   jitter = 1/5,
   scale = 0.5,
-  rotation = -pi/6
+  rotation = -pi/6,
+  sp = TRUE
 )
 }
 \arguments{
@@ -35,6 +36,8 @@ gen_charmap(
 \item{jitter}{amount of jitter added to each variations}
 
 \item{scale, rotation}{scale (0-1) and rotation (radian) of the set of control points}
+
+\item{sp}{add a blank glyph corresponding to whitespace character}
 }
 \value{
 a list-column dataframe with a character and layout column (set of control points).

@@ -237,7 +237,7 @@ render_contour <- function(
 
   layer_shore <- data |>
     stars::st_contour(breaks = c(0, alt_min), contour_lines = TRUE) |>
-    sf::st_crop(buffer_rectangle(point, ...)) |>
+    sf::st_crop(buffer_rectangle(point, ...)) %>%
     dplyr::filter(sf::st_length(.) > units::set_units(length_min,"m"))
 
   bb <- sf::st_bbox(layer_shore)
@@ -257,7 +257,7 @@ render_contour <- function(
         sf::st_buffer(dist = 0) |>
         sf::st_crop(buffer_rectangle(point, ...)) |>
         sf::st_cast("MULTIPOLYGON") |> dplyr::slice(2) |>
-        sf::st_cast("POLYGON") |>
+        sf::st_cast("POLYGON") %>%
         dplyr::filter(sf::st_area(.) > units::set_units(area_min,"m^2")) |>
         sf::st_combine()
 
@@ -265,14 +265,14 @@ render_contour <- function(
         stars::st_contour(
           breaks = breaks_minor[! breaks_minor %in% breaks_major],
           contour_lines = TRUE) |>
-        sf::st_crop(buffer_rectangle(point, ...)) |>
+        sf::st_crop(buffer_rectangle(point, ...)) %>%
         dplyr::filter(sf::st_length(.) > units::set_units(length_min,"m"))
 
       layer_contour_major <- data |>
         stars::st_contour(
           breaks = breaks_major[! breaks_major %in% alt_min],
           contour_lines = TRUE) |>
-        sf::st_crop(buffer_rectangle(point, ...)) |>
+        sf::st_crop(buffer_rectangle(point, ...)) %>%
         dplyr::filter(sf::st_length(.) > units::set_units(length_min,"m"))
       },
 

@@ -95,6 +95,7 @@ gen_sequence <- function(
 #' @param n_variation number of variations of each glyphs in the map
 #' @param jitter amount of jitter added to each variations
 #' @param scale,rotation scale (0-1) and rotation (radian) of the set of control points
+#' @param sp add a blank glyph corresponding to whitespace character
 #' @return a list-column dataframe with a character and layout column (set of control points).
 #' @export
 #'
