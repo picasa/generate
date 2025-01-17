@@ -2,6 +2,15 @@
 # TODO write functions for space-filling designs in 2D: gaussian, uniform, LHS, noise.
 
 # 1D ####
+
+#' Modify the base jitter() function to return the original vector if the jitter amount is zero
+#' @param x, numeric vector to which jitter should be added.
+#' @param amount, jitter quantity if positive, else returns the original vector (numeric)
+add_noise <- function(x, amount = NULL) {
+  if (amount > 0) jitter(x, amount = amount) else x
+}
+
+
 # https://en.wikipedia.org/wiki/Low-discrepancy_sequence
 
 #' Create a regular sequence of discrete numbers with noise
