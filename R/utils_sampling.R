@@ -6,6 +6,8 @@
 #' Modify the base jitter() function to return the original vector if the jitter amount is zero
 #' @param x, numeric vector to which jitter should be added.
 #' @param amount, jitter quantity if positive, else returns the original vector (numeric)
+#' @return a noisy numeric vector
+#' @export
 add_noise <- function(x, amount = NULL) {
   if (amount > 0) jitter(x, amount = amount) else x
 }

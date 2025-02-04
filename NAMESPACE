@@ -2,6 +2,7 @@
 
 export("%>%")
 export(L)
+export(add_noise)
 export(as_sf)
 export(as_sf_polygon)
 export(bin_xy)
