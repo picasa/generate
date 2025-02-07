@@ -27,6 +27,7 @@ Suggests:
     furrr,
     ggraph,
     glue,
+    hershey,
     igraph,
     lhs,
     MASS,
