@@ -67,7 +67,7 @@ get_box <- function(data, vars = c("x","y"), method = "center") {
 #' @param index string for the index column to be added from the original data
 #' @return a dataframe with new coordinates columns
 #' @export
-
+#'
 tr_translate <- function(data, x0, y0, index = NULL) {
 
   tr <- ggforce::linear_trans(translate(x0, y0))
@@ -83,7 +83,7 @@ tr_translate <- function(data, x0, y0, index = NULL) {
 #' @param index string for the index column to be added from the original data
 #' @return a dataframe with new coordinates columns
 #' @export
-
+#'
 tr_rotate <- function(data, a, index = NULL) {
   tr <- ggforce::linear_trans(rotate(a))
 
@@ -123,6 +123,44 @@ tr_jitter <- function(data, a, index = NULL) {
 
   if (is.null(index)) {d_tr} else {
     tibble::tibble("{index}" := dplyr::pull(data, index), d_tr)
+  }
+
+}
+
+#' Apply a periodic transformation to a 2D object
+#' @param data dataframe with x and y coordinates
+#' @param period period for cyclic offset
+#' @param amplitude strength of offset
+#' @param delta control how x and y offsets are linked
+#' @return a dataframe with new coordinates columns
+#' @export
+#'
+tr_wave <- function(data, period = 30, amplitude = 1/10, delta = 0){
+
+  if (nrow(data) > 1) {
+    width <- diff(range(data$x))
+    height <- diff(range(data$y))
+
+    # create basic sine wave variation
+    knots <- seq(min(data$x), max(data$x), length.out = max(5, ceiling(width)))
+    variation <- sin((2 * pi / period) * knots) * amplitude
+
+    # create smooth interpolation function
+    f_spline <- stats::smooth.spline(knots, variation)
+
+    # apply to both x and y, with phase shift for y
+    data_tr <- data |>
+      dplyr::mutate(
+        x = x + stats::predict(f_spline, x)$y * width ,
+        y = y + stats::predict(f_spline, x + delta)$y * height
+      )
+
+    return(data_tr)
+
+  } else {
+
+    return(data)
+
   }
 
 }

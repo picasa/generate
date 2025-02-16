@@ -9,9 +9,10 @@ layout_paragraph(
   map,
   cut = 80,
   flow = 0,
-  scale = c(2.5, 5),
   noise = c(0, 0),
-  spacing = 1,
+  scale = c(2.5, 5),
+  space = c(0, 0),
+  margin = 1,
   orientation = "lrtb"
 )
 }
@@ -24,11 +25,13 @@ layout_paragraph(
 
 \item{flow}{number of glyphs allowed after the initial line cut, 0 means no overflowing}
 
+\item{noise}{period and amplitude of character deformations (vector fonts)}
+
 \item{scale}{scales between glyphs (x) and lines (y)}
 
-\item{noise}{random spacing between characters (sd) and words (mean, sd)}
+\item{space}{random spacing between characters (sd) and words (mean, sd)}
 
-\item{spacing}{relative space between paragraphs}
+\item{margin}{relative space between paragraphs}
 
 \item{orientation}{writing direction (e.g. right to left, top to bottom)}
 }
