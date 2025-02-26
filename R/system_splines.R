@@ -275,7 +275,7 @@ layout_paragraph <- function(
       layout = purrr::map(
         seq, ~ layout_sequence(
           seq = ..1, map = map, noise = noise, scale = scale, space = space,
-          cut = cut, orientation = orientation))
+          cut = cut, flow = flow, orientation = orientation))
     )
 
   # layout sequences as paragraphs

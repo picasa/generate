@@ -137,7 +137,7 @@ tr_jitter <- function(data, a, index = NULL) {
 #'
 tr_wave <- function(data, period = 30, amplitude = 1/10, delta = 0){
 
-  if (nrow(data) > 1) {
+  if (nrow(data) > 2) {
     width <- diff(range(data$x))
     height <- diff(range(data$y))
 
