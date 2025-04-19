@@ -9,6 +9,7 @@ layout_ellipse(
   x0 = 0,
   y0 = 0,
   r = 1,
+  s = 0,
   a = -pi/6,
   scale_x = 0.5,
   method = "uniform"
@@ -20,6 +21,8 @@ layout_ellipse(
 \item{x0, y0}{coordinates of the center of the sampling area}
 
 \item{r}{radius of the sampling area}
+
+\item{s}{variance for gaussian radius of the sampling area}
 
 \item{a}{rotation angle of the point set (radians)}
 

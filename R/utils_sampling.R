@@ -120,13 +120,14 @@ layout_rectangle <- function(
 #' @param n number of points
 #' @param x0,y0 coordinates of the center of the sampling area
 #' @param r radius of the sampling area
+#' @param s variance for gaussian radius of the sampling area
 #' @param a rotation angle of the point set (radians)
 #' @param scale_x scaling coefficient applied on the x axis
 #' @return a dataframe with n, x, and y columns
 #' @export
 
 layout_ellipse <- function(
-    n = 7, x0 = 0, y0 = 0, r = 1, a = -pi/6, scale_x = 0.5, method = "uniform"
+    n = 7, x0 = 0, y0 = 0, r = 1, s = 0, a = -pi/6, scale_x = 0.5, method = "uniform"
   ) {
 
   switch (
@@ -152,7 +153,7 @@ layout_ellipse <- function(
     gaussian = {
 
       layout <- MASS::mvrnorm(
-        n = n, mu = c(0,0),
+        n = n, mu = c(x0,y0),
         Sigma = matrix(c(r, 0, 0, r), ncol = 2)) |>
         magrittr::set_colnames(c("x","y")) |>
         dplyr::as_tibble(.name_repair = "unique") |>
