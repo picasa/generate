@@ -34,12 +34,16 @@ gen_paper <- function(
 # themes ####
 
 #' Customize a theme object with margins, color, and background.
-#' @param output set up theme for "digital" or "plotter".
-#' @param color background color.
+#' @param output string to select "digital" or "plotter" theme.
+#' "plotter" theme strips out panel backgroung and borders for a clean svg output.
+#' @param color background color for digital output, default to an oldish white color.
+#' @param border,width border color and width, default to NA.
 #' @param margin a vector of four numeric values for margins (top, right, bottom, left) in mm.
 #' @return a ggplot theme object
 #' @export
-theme_paper <- function(output = "digital", color = "#FEFAEE", margin = rep(0,4)) {
+theme_paper <- function(
+    output = "digital", color = "#FEFAEE",
+    border = NA, width = NA, margin = rep(0,4)) {
 
   switch (
     output,
@@ -47,7 +51,8 @@ theme_paper <- function(output = "digital", color = "#FEFAEE", margin = rep(0,4)
       theme <- ggplot2::theme(
         panel.background = ggplot2::element_blank(),
         panel.border = ggplot2::element_blank(),
-        plot.background = ggplot2::element_rect(fill = color, linewidth = NA, colour = NA),
+        plot.background = ggplot2::element_rect(
+          fill = color, linewidth = width, colour = border),
         plot.margin = grid::unit(margin, "mm")
       )
     },

@@ -4,12 +4,21 @@
 \alias{theme_paper}
 \title{Customize a theme object with margins, color, and background.}
 \usage{
-theme_paper(output = "digital", color = "#FEFAEE", margin = rep(0, 4))
+theme_paper(
+  output = "digital",
+  color = "#FEFAEE",
+  border = NA,
+  width = NA,
+  margin = rep(0, 4)
+)
 }
 \arguments{
-\item{output}{set up theme for "digital" or "plotter".}
+\item{output}{string to select "digital" or "plotter" theme.
+"plotter" theme strips out panel backgroung and borders for a clean svg output.}
 
-\item{color}{background color.}
+\item{color}{background color for digital output, default to an oldish white color.}
+
+\item{border, width}{border color and width, default to NA.}
 
 \item{margin}{a vector of four numeric values for margins (top, right, bottom, left) in mm.}
 }

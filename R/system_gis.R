@@ -3,14 +3,13 @@
 #' Read and merge DEM tiles from IGN DBALTI or RGEALTI as a function of WGS84 coordinates
 #' @param coord latitude and longitude of centroid (named numeric vector, decimal degrees).
 #' @param buffer circular buffer around the centroid (numeric, m).
-#' @param dep departement code number used to index DEM data (numeric).
 #' @param source DEM database to be used (character).
 #' * "db_alti" is a national database at 25x25m resolution.
-#' * "rge_alti" is a departement-level database at 5x5m resolution, with 1 - 20m source data.
+#' * "rge_alti" is a gridded database at 5x5m resolution, with 1 - 20m source data.
 #' @return a digital elevation model as a spatial data object (stars)
 #' @export
 #'
-read_dem <- function(coord, buffer = 1000, dep, source="db_alti"){
+read_dem <- function(coord, buffer = 1000, source = "db_alti"){
 
   # define map location in IGN CRS
   location <- if (is.vector(coord)) {
@@ -31,10 +30,7 @@ read_dem <- function(coord, buffer = 1000, dep, source="db_alti"){
     },
 
     rge_alti = {
-      # TODO get departement code corresponding to coordinates
-      # https://geo.api.gouv.fr/adresse
-      # TODO handle cases with cross departements datasets
-      grid <- sf::read_sf(glue::glue("data/private/{source}/shp/{dep}/dalles.shp"))
+      grid <- sf::read_sf(glue::glue("data/private/{source}/shp/rge_alti_5m.shp"))
     },
 
     stop("Invalid `source` value")
@@ -44,7 +40,7 @@ read_dem <- function(coord, buffer = 1000, dep, source="db_alti"){
 
   # list tile containing requested location plus buffer
   list_tiles <- sf::st_intersection(
-    grid,
+    grid |> sf::st_transform(crs = 2154),
     location |> sf::st_buffer(buffer)
     ) |>
     dplyr::pull(NOM_DALLE)

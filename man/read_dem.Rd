@@ -4,19 +4,17 @@
 \alias{read_dem}
 \title{Read and merge DEM tiles from IGN DBALTI or RGEALTI as a function of WGS84 coordinates}
 \usage{
-read_dem(coord, buffer = 1000, dep, source = "db_alti")
+read_dem(coord, buffer = 1000, source = "db_alti")
 }
 \arguments{
 \item{coord}{latitude and longitude of centroid (named numeric vector, decimal degrees).}
 
 \item{buffer}{circular buffer around the centroid (numeric, m).}
 
-\item{dep}{departement code number used to index DEM data (numeric).}
-
 \item{source}{DEM database to be used (character).
 \itemize{
 \item "db_alti" is a national database at 25x25m resolution.
-\item "rge_alti" is a departement-level database at 5x5m resolution, with 1 - 20m source data.
+\item "rge_alti" is a gridded database at 5x5m resolution, with 1 - 20m source data.
 }}
 }
 \value{
