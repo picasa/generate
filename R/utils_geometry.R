@@ -236,17 +236,31 @@ buffer_rectangle <- function(
     c(x_shift, y_shift, x_shift, y_shift)
 }
 
-#' Crop a raster (stars format) to a given bounding box
-#' @param raster, input raster (stars)
-#' @param point, centroid of the cropping region. point and raster CRS must be identical (sf).
-#' @param size, dimensions defining the cropping bounding box (x,y numerical vector)
+#' Crop a raster as a function of given bounding box
+#' @param raster, input raster (stars or dataframe). With a dataframe, the cropping is done around the center point.
+#' @param point, centroid of the cropping region. point and raster CRS must be identical.
+#' @param size, dimensions defining the cropping bounding box (x,y raster units)
 #' @return xyz dataframe of the cropped region
 #' @export
 crop_rectangle <- function(raster, point, size) {
 
-  crop <- buffer_rectangle(point, size = size) %>% sf::st_crop(raster, .)
+  if (is.data.frame(raster)) {
 
-  return(crop |> dplyr::as_tibble() |> dplyr::select(x, y, z = 3))
+    x0 = sum(range(raster$x))/2
+    y0 = sum(range(raster$y))/2
+
+    crop <- raster |>
+      dplyr::filter(dplyr::between(x, x0 - size[1] / 2, x0 + size[1] / 2 )) |>
+      dplyr::filter(dplyr::between(y, y0 - size[2] / 2, y0 + size[2] / 2 ))
+
+  } else {
+
+    box <- buffer_rectangle(point, size = size)
+    crop <- sf::st_crop(raster, box) |>
+      dplyr::as_tibble() |> dplyr::select(x, y, z = 3)
+  }
+
+  return(crop)
 }
 
 

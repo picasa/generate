@@ -2,20 +2,20 @@
 % Please edit documentation in R/utils_geometry.R
 \name{crop_rectangle}
 \alias{crop_rectangle}
-\title{Crop a raster (stars format) to a given bounding box}
+\title{Crop a raster as a function of given bounding box}
 \usage{
 crop_rectangle(raster, point, size)
 }
 \arguments{
-\item{raster, }{input raster (stars)}
+\item{raster, }{input raster (stars or dataframe). With a dataframe, the cropping is done around the center point.}
 
-\item{point, }{centroid of the cropping region. point and raster CRS must be identical (sf).}
+\item{point, }{centroid of the cropping region. point and raster CRS must be identical.}
 
-\item{size, }{dimensions defining the cropping bounding box (x,y numerical vector)}
+\item{size, }{dimensions defining the cropping bounding box (x,y raster units)}
 }
 \value{
 xyz dataframe of the cropped region
 }
 \description{
-Crop a raster (stars format) to a given bounding box
+Crop a raster as a function of given bounding box
 }
