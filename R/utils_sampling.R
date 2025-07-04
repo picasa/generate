@@ -69,6 +69,62 @@ sample_missing <- function(x, y = NULL, p, method = "random") {
   )
 }
 
+#' Detect top local maxima with noise filtering
+#'
+#' Identifies local maxima in a time series by comparing each point to its 
+#' neighbors and filtering based on deviation from a smoothed trend.
+#'
+#' @param x Numeric vector of values 
+#' @param n Number of top maxima to return
+#' @param w Window size for rolling mean smoothing (larger values = more smoothing)
+#' @param delta Maximum allowed deviation between raw and smoothed values for noise filtering
+#'
+#' @return Logical vector of same length as x, TRUE for top n local maxima
+#'
+#' @examples
+#' # Generate sample data with peaks
+#' x <- c(1, 3, 2, 5, 4, 8, 6, 2, 7, 3)
+#' l_max(x, n = 2, w = 3, delta = 2)
+#' @export
+#' 
+l_max <- function(x, n = 5, w = 20, delta = 20) {
+  x0 <- RcppRoll::roll_mean(x, n = w, na.rm = TRUE, fill = NA)
+  deviation <- (x0 - x) < delta
+  local <- dplyr::lag(x, 1) < x & dplyr::lead(x, 1) < x
+  s <- deviation & !is.na(local) & local
+  
+  dplyr::dense_rank(dplyr::desc(ifelse(s, x, -Inf))) <= n
+}
+
+#' Detect top local minima with noise filtering
+#'
+#' Identifies local minima in a time series by comparing each point to its 
+#' neighbors and filtering based on deviation from a smoothed trend. Returns
+#' a logical vector indicating the top n minima.
+#'
+#' @param x Numeric vector of values to analyze
+#' @param n Number of top minima to return
+#' @param w Window size for rolling mean smoothing (larger values = more smoothing)
+#' @param delta Maximum allowed deviation between raw and smoothed values for noise filtering
+#'
+#' @return Logical vector of same length as x, TRUE for top n local minima
+#'
+#' @examples
+#' # Generate sample data with valleys
+#' x <- c(5, 2, 4, 1, 3, 0, 2, 4, 1, 3)
+#' l_min(x, n = 2, w = 3, delta = 2)
+#' @export
+#' 
+l_min <- function(x, n = 5, w = 20, delta = 20) {
+  x0 <- RcppRoll::roll_mean(x, n = w, na.rm = TRUE, fill = NA)
+  deviation <- (x0 - x) > delta
+  local <- dplyr::lag(x, 1) > x & dplyr::lead(x, 1) > x
+  s <- deviation & !is.na(local) & local
+  
+  dplyr::dense_rank(ifelse(s, x, Inf)) <= n
+}
+
+
 
 # 2D ####
 
