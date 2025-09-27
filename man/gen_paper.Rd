@@ -6,21 +6,25 @@
 \usage{
 gen_paper(
   n = 30000,
+  scale = c(1, 1),
   jitter = 1/30,
   strength = 0.5,
   size = 1/10,
   color = "black",
+  alpha = 1/20,
   expansion = -1/50
 )
 }
 \arguments{
 \item{n}{texture density}
 
+\item{scale}{orientation of texture elements (upper limit of uniform sampling)}
+
 \item{jitter}{length of texture elements}
 
 \item{strength}{curvature in texture elements}
 
-\item{size, color}{linewidth and color of texture elements}
+\item{size, color, alpha}{aesthetics of texture elements}
 
 \item{expansion}{additive scaling for limits}
 }

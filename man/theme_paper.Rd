@@ -7,8 +7,8 @@
 theme_paper(
   output = "digital",
   color = "#FEFAEE",
-  border = NA,
-  width = NA,
+  border = NULL,
+  width = NULL,
   margin = rep(0, 4)
 )
 }
@@ -18,7 +18,7 @@ theme_paper(
 
 \item{color}{background color for digital output, default to an oldish white color.}
 
-\item{border, width}{border color and width, default to NA.}
+\item{border, width}{border color and width, default to NULL.}
 
 \item{margin}{a vector of four numeric values for margins (top, right, bottom, left) in mm.}
 }
