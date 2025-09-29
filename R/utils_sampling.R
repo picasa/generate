@@ -93,7 +93,9 @@ l_max <- function(x, n = 5, w = 20, delta = 20) {
   local <- dplyr::lag(x, 1) < x & dplyr::lead(x, 1) < x
   s <- deviation & !is.na(local) & local
   
-  dplyr::dense_rank(dplyr::desc(ifelse(s, x, -Inf))) <= n
+  if (n >= length(x[s])) s 
+  else {dplyr::dense_rank(dplyr::desc(ifelse(s, x, -Inf))) <= n}
+  
 }
 
 #' Detect top local minima with noise filtering
@@ -121,7 +123,9 @@ l_min <- function(x, n = 5, w = 20, delta = 20) {
   local <- dplyr::lag(x, 1) > x & dplyr::lead(x, 1) > x
   s <- deviation & !is.na(local) & local
   
-  dplyr::dense_rank(ifelse(s, x, Inf)) <= n
+  if (n >= length(x[s])) s 
+  else {dplyr::dense_rank(ifelse(s, x, Inf)) <= n}
+  
 }
 
 
