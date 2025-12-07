@@ -77,6 +77,7 @@ tr_translate <- function(data, x0, y0, index = NULL) {
     tibble::tibble("{index}" := dplyr::pull(data, index), d_tr)
   }
 }
+
 #' Rotate a 2D object
 #' @param data dataframe with x and y coordinates, and id columns
 #' @param a rotation angle (radian)
@@ -165,6 +166,38 @@ tr_wave <- function(data, period = 30, amplitude = 1/10, delta = 0){
 
 }
 
+#' smooth paths with loess method 
+#' @param data a dataframe with x and y columns
+#' @param span controls the degree of smoothing. higher value creates smoother paths.
+#' @param n_min minimal number of points for smoothing.
+#' @param ... use for mapping other arguments
+#' @export
+#' 
+tr_loess <- function(data, span, n_min = 10, ...) {
+
+  # do not fit model for small paths
+  if(nrow(tidyr::drop_na(data, y)) > n_min) {
+
+    m <- stats::loess(y ~ x, data = data, na.action = stats::na.exclude, span = span)
+    return(data |> dplyr::mutate(y = stats::predict(m)) |> dplyr::select(x, y))
+
+  } else {
+    return(data |> dplyr::mutate(y = rep(NA, dplyr::n())))
+  }
+  
+}
+
+#' apply recursive transformations
+#' @param data dataframe with xy columns
+#' @param f transformation function
+#' @param p named list of parameters values for the transformation function
+#' @param ... use for mapping other arguments
+#' @export
+#'  
+tr_recurse <- function(data, f, p, ...) {
+  p |> purrr::pmap_dfr(~ f(data, ...), .id = "id")
+}
+
 
 # spatial ####
 
@@ -172,7 +205,7 @@ tr_wave <- function(data, period = 30, amplitude = 1/10, delta = 0){
 #' @param data dataframe with x and y coordinates
 #' @return a sf point object, NULL if input dataframe is empty
 #' @export
-
+#' 
 as_sf <- function(data) {
 
   if (nrow(data) == 0) {return(NULL)}

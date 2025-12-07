@@ -239,7 +239,7 @@ render_sequence <- function(n, length, data) {
 #' @export
 
 render_paragraph <- function(text, data, ncol = 80, scale = 0.8, align = "none") {
-  seq <- text |> stringr::str_to_lower() |> stringr::str_split(., "")
+  seq <- text |> stringr::str_to_lower() |> stringr::str_split("")
 
   # join characters with glyph plots, non-match creates NULL plot (blank space with cowplot)
   data <- tibble::tibble(character=seq[[1]]) |>
