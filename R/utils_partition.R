@@ -85,40 +85,40 @@ round_near <- function(x, accuracy) {
 
 index_group <- function(x, k = NULL, length = NULL, method) {
 
+  # no indexing with one group
+  if (k == 1) {
+    index = rep(1, len = length(x))
+  } else {
+    switch (
 
-  switch (
+        method,
 
-    method,
+        # fixed interval number or width (x - 1) %/% width + 1
+        "fixed" = {
+          index <- ggplot2::cut_interval(
+            dplyr::dense_rank(x), n = k, length = length, labels = FALSE)
+        },
 
-    # fixed interval number or width (x - 1) %/% width + 1
-    "fixed" = {
-      index <- ggplot2::cut_interval(
-        dplyr::dense_rank(x), n = k, length = length, labels = FALSE)
-    },
+        # quantiles + noise
+        "quantiles" = {
+          probs <- seq(0, (k-2)/(k-1), len = k-1)
+          noise <- stats::runif(k-1, 1/(4*k), 1/k)
+          breaks <- c(min(x), stats::quantile(x, p = probs + noise), max(x)) |> unique()
+          index <- ggplot2::cut_interval(x, n = k-1, breaks = breaks, labels = FALSE)
+        },
 
-    # quantiles + noise
-    "quantiles" = {
-      probs <- seq(0, (k-2)/(k-1), len = k-1)
-      noise <- stats::runif(k-1, 1/(4*k), 1/k)
-      breaks <- c(min(x), stats::quantile(x, p = probs + noise), max(x)) |> unique()
-      index <- ggplot2::cut_interval(x, n = k-1, breaks = breaks, labels = FALSE)
-    },
+        # breaks randomly sampled
+        "random" = {
+          breaks = c(min(x), sample(min(x):max(x), k-1), max(x)) |> sort() |> unique()
+          index <- ggplot2::cut_interval(x, n = k-1, breaks = breaks, labels = FALSE)
+        },
 
-    # breaks randomly sampled
-    "random" = {
-      breaks = c(min(x), sample(min(x):max(x), k-1), max(x)) |> sort() |> unique()
-      index <- ggplot2::cut_interval(x, n = k-1, breaks = breaks, labels = FALSE)
-    },
+        "hclust" = {
+          index <- x |> stats::dist() |> stats::hclust() |> stats::cutree(k = k)
+        },
 
-    "hclust" = {
-      index <- x |> stats::dist() |> stats::hclust() |> stats::cutree(k = k)
-    },
-
-    stop("Invalid `method` value")
-  )
-
+        stop("Invalid `method` value")
+      )
+  }
   return(index)
 }
-
-
-
