@@ -1,6 +1,22 @@
 
 # geometry ####
 
+#' Expand range to nearest even bounds
+#'
+#' Rounds a numeric range outward to the nearest even integers:
+#' floor for the minimum, ceiling for the maximum.
+#'
+#' @param x A numeric vector of length 2 (min, max).
+#' @return A numeric vector of length 2 with even bounds.
+#'
+#' @examples
+#' round_even(c(-1.5, 3.2))  # returns c(-2, 4)
+#'
+#' @export
+round_even <- function(x) {
+  c(floor(x[1] / 2) * 2, ceiling(x[2] / 2) * 2)
+}
+
 #' Set common limits to a list of plots
 #' @param p a list of plots
 #' @return a list of plots with modified limits.
