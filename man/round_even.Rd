@@ -2,10 +2,7 @@
 % Please edit documentation in R/utils_geometry.R
 \name{round_even}
 \alias{round_even}
-\title{Expand range to nearest even bounds
-
-Rounds a numeric range outward to the nearest even integers:
-floor for the minimum, ceiling for the maximum.}
+\title{Expand range to nearest even bounds}
 \usage{
 round_even(x)
 }
@@ -16,14 +13,10 @@ round_even(x)
 A numeric vector of length 2 with even bounds.
 }
 \description{
-Expand range to nearest even bounds
-
 Rounds a numeric range outward to the nearest even integers:
 floor for the minimum, ceiling for the maximum.
 }
 \examples{
-                                                                                          
-round_even(c(-1.5, 3.2))  # returns c(-2, 4)                                                        
-round_even(c(0, 5))       # returns c(0, 6)                                                         
-                                                                                                    
+round_even(c(-1.5, 3.2))  # returns c(-2, 4)
+
 }

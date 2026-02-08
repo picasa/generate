@@ -11,7 +11,8 @@ save_plot(
   size = c(148, 210),
   format = "jpg",
   dpi = NULL,
-  bg = "#FEFAEE"
+  bg = "#FEFAEE",
+  cmd = NULL
 )
 }
 \arguments{
@@ -26,14 +27,17 @@ save_plot(
 \item{format}{file format
 \itemize{
 \item png, print quality bitmap output (400 dpi, lossless)
-\item jpg, default bitmap output (200 dpi, compressed)
+\item jpg, default bitmap output (218 dpi, compressed)
 \item snap, screen quality output (150 dpi, default path)
 \item svg, vector format
 }}
 
-\item{dpi}{resolution (dpi)}
+\item{dpi}{image resolution in dpi (default 218 for 1:1 display at 50\% zoom
+with 218 dpi screen and 2x scale factor)}
 
 \item{bg}{background color passed to ggsave function}
+
+\item{cmd}{bash vector processing command to execute after SVG export (vector method only)}
 }
 \description{
 Save R plot with presets file formats
