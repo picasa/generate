@@ -133,8 +133,8 @@ transform_dem <- function(dem, view = "N", z_scale = 1, output = "raster") {
   d_rot <- switch(EXPR = view,
     N = d |> terra::flip("vertical") |> terra::flip("horizontal"),
     S = d,
-    W = d |> terra::trans() |> terra::flip("horizontal"),
-    E = d |> terra::trans() |> terra::flip("vertical"),
+    E = d |> terra::trans() |> terra::flip("horizontal"),
+    W = d |> terra::trans() |> terra::flip("vertical"),
     stop("Invalid `view` value")
   )
 
