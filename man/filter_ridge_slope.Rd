@@ -7,10 +7,14 @@
 filter_ridge_slope(data, size = 3)
 }
 \arguments{
-\item{data}{dataframe of computed ridgelines from \code{render_ridge()}}
+\item{data}{dataframe of processed ridgelines with zn, xn, y_rank, x_rank columns}
 
 \item{size}{size of window used to compute the slope rolling average (integer, cells)}
 }
+\value{
+filtered dataframe with z_slope column and flat segments set to NA
+}
 \description{
-Filter ridgeline dataframe as a function of local slope
+Computes a rolling average of the absolute slope along each ridge line and
+sets flat segments (slope = 0) to NA.
 }

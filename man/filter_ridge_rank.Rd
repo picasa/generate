@@ -7,17 +7,20 @@
 filter_ridge_rank(data, p, method = "grid")
 }
 \arguments{
-\item{data}{dataframe of computed ridgelines from \code{render_ridge()}}
+\item{data}{dataframe of processed ridgelines with y_rank column}
 
-\item{p}{proportion of ridgeline to remove}
+\item{p}{proportion of ridgelines to keep (numeric, 0-1)}
 
-\item{method}{method used to remove ridges.
+\item{method}{method used to select ridges.
 \itemize{
-\item "random" randomly removes a proportion of ridges.
-\item "grid" uniformly sample a proportion of ridges.
-\item "strip" remove a proportion of consecutive ridges.
+\item "random": randomly sample a proportion of ridges.
+\item "grid": uniformly sample a proportion of ridges.
+\item "strip": sample consecutive strips of ridges.
 }}
 }
+\value{
+filtered dataframe with selected ridgelines
+}
 \description{
-Filter ridgeline dataframe as a function of rank index
+Subsets ridgelines by their y_rank using random, uniform, or strip-based sampling.
 }

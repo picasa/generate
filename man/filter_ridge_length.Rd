@@ -7,7 +7,7 @@
 filter_ridge_length(data, length_n = 10, length_x = 5/100, dist_y = 0.95)
 }
 \arguments{
-\item{data}{dataframe of computed ridgelines from \code{render_ridge()}}
+\item{data}{dataframe of processed ridgelines with zn, y_rank, y_dist columns}
 
 \item{length_n}{length of ridge segments to be filtered (integer, cells)}
 
@@ -15,6 +15,10 @@ filter_ridge_length(data, length_n = 10, length_x = 5/100, dist_y = 0.95)
 
 \item{dist_y}{relative distance to remove ridgelines (numeric, 0-1)}
 }
+\value{
+filtered dataframe with short segments set to NA
+}
 \description{
-Filter ridgeline dataframe as a function of segment length
+Removes short ridge segments (fewer than \code{length_n} cells) and ridgelines
+with a low proportion of visible points beyond \code{dist_y}.
 }

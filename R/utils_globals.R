@@ -1,9 +1,23 @@
 utils::globalVariables(c(
-  ".", "NOM_DALLE", "V1", "V2", "a", "buffer", "c_l", "c_n", "cl", "char",
-  "char_idx", "d", "data", "dz", "e_c", "e_w", "flow", "geometry", "glyph",
-  "group", "i", "id", "l", "layout", "line", "n", "offset", "p","part", "path",
-  "pattern", "plot_ld", "position", "r", "s", "stroke","shade", "theta",
-  "variation",  "word", "x", "x0", "xend", "xn", "xp",  "x_rank", "y", "y0" ,
-  "y_dist", "y_rank", "yend", "z", "zl", "zl_n", "zn", "zs", "z_slope",
-  ":=", "rotate", "shift", "sentences","translate"))
-
+  ".", ".data", ":=",
+  "NOM_DALLE", "V1", "V2",
+  "a", "buffer",
+  "c_l", "c_n", "char", "char_idx", "cl",
+  "d", "data", "dz",
+  "e_c", "e_w",
+  "flow",
+  "geometry", "glyph", "group",
+  "i", "id",
+  "l", "layout", "line",
+  "n",
+  "offset",
+  "p", "part", "path", "pattern", "plot_ld", "position",
+  "r", "rotate",
+  "s", "sentences", "shade", "shift", "stroke",
+  "theta", "tr", "translate",
+  "variation",
+  "word",
+  "x", "x0", "x_rank", "xend", "xn", "xp",
+  "y", "y0", "y_dist", "y_rank", "yend",
+  "z", "z_alpha", "z_slope", "zl", "zl_n", "zn", "zs", "zs_max", "zs_rmax"
+))

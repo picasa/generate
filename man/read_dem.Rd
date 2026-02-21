@@ -2,24 +2,49 @@
 % Please edit documentation in R/system_gis.R
 \name{read_dem}
 \alias{read_dem}
-\title{Read and merge DEM tiles from IGN DBALTI or RGEALTI as a function of WGS84 coordinates}
+\title{Read and crop DEM data from multiple sources}
 \usage{
-read_dem(coord, buffer = 1000, source = "db_alti")
+read_dem(
+  coord,
+  size,
+  zoom,
+  x_shift = 0,
+  y_shift = 0,
+  orientation = "v",
+  ratio = 297/210,
+  source = "db_alti",
+  data = NULL
+)
 }
 \arguments{
-\item{coord}{latitude and longitude of centroid (named numeric vector, decimal degrees).}
+\item{coord}{sf point in EPSG:2154, or named vector with lon/lat in decimal degrees.}
 
-\item{buffer}{circular buffer around the centroid (numeric, m).}
+\item{size}{size of the largest dimension of the bounding box (numeric, m).
+A vector of length 2 (width, height) ignores the orientation and ratio parameters.}
 
-\item{source}{DEM database to be used (character).
+\item{zoom}{zoom level (1-14) for \emph{elevatr} API. For details on zoom and resolution see the documentation from Mapzen.}
+
+\item{x_shift}{horizontal offset applied to the cropping box center (m, default 0)}
+
+\item{y_shift}{vertical offset applied to the cropping box center (m, default 0)}
+
+\item{orientation}{cropping box orientation, "v" (vertical) or "h" (horizontal). Default "v".}
+
+\item{ratio}{width:height ratio for the cropping box (default 297/210, A4 portrait)}
+
+\item{source}{source for elevation data (memory, local or online sources)
 \itemize{
-\item "db_alti" is a national database at 25x25m resolution.
-\item "rge_alti" is a gridded database at 5x5m resolution, with 1 - 20m source data.
+\item "raster": pre-loaded raster object passed via \code{data}
+\item "db_alti": French IGN BD ALTI 75x75m
+\item "rge_alti": French IGN RGE ALTI 5x5m, with 1-20m source input.
+\item "api": elevatr package, EU-DEM / Copernicus (~30m, zoom-dependent)
 }}
+
+\item{data}{raster object, used when source = "raster" to sample and crop an object in memory (default NULL)}
 }
 \value{
-a digital elevation model as a spatial data object (stars)
+a digital elevation model as a cropped spatial data object (stars)
 }
 \description{
-Read and merge DEM tiles from IGN DBALTI or RGEALTI as a function of WGS84 coordinates
+Unifies all elevation data sources and crops to an oriented bounding box computed from the center coordinate.
 }
