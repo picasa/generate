@@ -10,8 +10,18 @@
 #' @param x numeric vector
 #' @param n window size (number of previous values to look back)
 roll_max_lag <- function(x, n) {
-  x <- c(rep(-Inf, n), replace(x, is.na(x), -Inf)) 
+  x <- c(rep(-Inf, n), replace(x, is.na(x), -Inf))
   RcppRoll::roll_max(x, n = n, fill = NA_real_, align = "right") |> utils::tail(-n)
+}
+
+#' Convert a SpatRaster to an xyz tibble
+#'
+#' @param data SpatRaster
+#' @param z column name for the raster values (default "z")
+#' @return tibble with x, y, and named z column
+#' @export
+as_xyz <- function(data, z = "z") {
+  as.data.frame(data, xy = TRUE) |> dplyr::rename(!!z := 3) |> tibble::as_tibble()
 }
 
 ## io ####
@@ -140,7 +150,7 @@ transform_dem <- function(dem, view = "N", z_scale = 1, output = "raster") {
   d_scale <- switch(
     output,
     "raster" = {d_rot * z_scale},
-    "df" = {(d_rot * z_scale) |> as.data.frame(xy = TRUE) |> dplyr::rename(z = 3) |> tibble::as_tibble()}
+    "df" = {(d_rot * z_scale) |> as_xyz()}
   )
 
   return(d_scale)
