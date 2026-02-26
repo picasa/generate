@@ -10,9 +10,8 @@
 #' @param x numeric vector
 #' @param n window size (number of previous values to look back)
 roll_max_lag <- function(x, n) {
-  c(rep(-Inf, n), x) |>
-    RcppRoll::roll_max(n = n, fill = NA_real_, align = "right") |>
-    utils::tail(-n)
+  x <- c(rep(-Inf, n), replace(x, is.na(x), -Inf)) 
+  RcppRoll::roll_max(x, n = n, fill = NA_real_, align = "right") |> utils::tail(-n)
 }
 
 ## io ####
@@ -484,6 +483,35 @@ layer_smooth <- function(
     linewidth = size, lineend = lineend,
     color = color, alpha = alpha, na.rm = TRUE)
 
+}
+
+
+#' Compute the horizon ridgeline (upper envelope)
+#'
+#' For each x-column, selects the point with the highest shifted elevation.
+#' Returns a ggplot geom_line layer suitable for overlaying on ridge plots.
+#'
+#' @param data dataframe from mask_lines() (must contain xn, y_rank, \{z\}s columns)
+#' @param z base column name (default "z"). Reads \{z\}s.
+#' @param size,color,alpha,lineend line aesthetics
+#' @return ggplot geom_line layer
+#' @export
+layer_horizon <- function(
+  data, z = "z",
+  size = 0.3, color = "black", alpha = 0.8, lineend = "butt") {
+
+  z_in <- paste0(z, "s")
+
+  data_horizon <- data |>
+    dplyr::group_by(xn) |>
+    dplyr::slice_max(.data[[z_in]], n = 1) |>
+    dplyr::ungroup()
+
+  ggplot2::geom_line(
+    data = data_horizon,
+    ggplot2::aes(x = xn, y = .data[[z_in]]),
+    linewidth = size, lineend = lineend,
+    color = color, alpha = alpha, na.rm = TRUE)
 }
 
 
