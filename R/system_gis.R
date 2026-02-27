@@ -575,8 +575,14 @@ plot_ridge <- function(
   # modify coordinate system
   plot_base <- switch(
     coord,
-    fixed = {plot + ggplot2::coord_fixed(expand = expand) + ggplot2::theme_void()},
-    free = {plot + ggplot2::coord_cartesian(expand = expand) + ggplot2::theme_void()},
+    fixed = {
+      plot + 
+        ggplot2::coord_fixed(expand = expand, xlim = xlim, ylim = ylim) + 
+        ggplot2::theme_void()},
+    free = {
+      plot + 
+        ggplot2::coord_cartesian(expand = expand, xlim = xlim, ylim = ylim) + 
+        ggplot2::theme_void()},
   )
   
   # set limits as a function real x:y ratio in data.
