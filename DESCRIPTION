@@ -45,4 +45,5 @@ Suggests:
     tidygraph,
     tidyselect,
     truncnorm,
-    units
+    units,
+    xml2

@@ -12,8 +12,66 @@ sample_letters <- function(n = 3, x = letters) {
 }
 
 
-# generate ####
+# font ####
 
+#' Parse an SVG 1.1 single-line font file into a glyph table
+#'
+#' @description Parse SVG fonts from the single-line font collection at
+#'   \url{https://github.com/golanlevin/p5-single-line-font-resources}.
+#'   Returns a tibble with columns: char, adv, x, y, stroke.
+#'   Coordinates are normalized by units-per-em (typically \[0, 1\] range).
+#'   See \url{https://www.w3.org/TR/SVG11/fonts.html} for the SVG font spec.
+#' @param path path to an SVG font file
+#' @return a tibble with columns: char, adv, x, y, stroke
+#' @export
+#'
+parse_font <- function(path) {
+
+  doc <- xml2::read_xml(path)
+  ns <- xml2::xml_ns(doc)
+
+  font_node <- xml2::xml_find_first(doc, ".//d1:font", ns)
+  default_adv <- as.numeric(xml2::xml_attr(font_node, "horiz-adv-x") %||% "500")
+
+  face <- xml2::xml_find_first(doc, ".//d1:font-face", ns)
+  upm <- as.numeric(xml2::xml_attr(face, "units-per-em") %||% "1000")
+
+  glyphs <- xml2::xml_find_all(doc, ".//d1:glyph", ns)
+
+  purrr::map_dfr(glyphs, function(g) {
+    char <- xml2::xml_attr(g, "unicode")
+    d    <- xml2::xml_attr(g, "d")
+    if (is.na(char) || is.na(d) || nchar(char) != 1) return(NULL)
+
+    adv <- as.numeric(xml2::xml_attr(g, "horiz-adv-x") %||% as.character(default_adv))
+
+    # tokenize path commands (M, L, H, V + relative variants)
+    tokens <- stringr::str_match_all(d, "([MLHVmlhv])\\s*([\\d.e+-]+)?[,\\s]*([\\d.e+-]+)?")[[1]]
+    if (nrow(tokens) == 0) return(NULL)
+
+    cx <- 0; cy <- 0; stroke_id <- 0
+    rows <- purrr::pmap_dfr(
+      list(tokens[,2], tokens[,3], tokens[,4]),
+      function(cmd, a, b) {
+        a <- as.numeric(a); b <- as.numeric(b)
+        switch(cmd,
+          "M" = { cx <<- a; cy <<- b; stroke_id <<- stroke_id + 1 },
+          "L" = { cx <<- a; cy <<- b },
+          "H" = { cx <<- a },
+          "V" = { cy <<- a },
+          "m" = { cx <<- cx + a; cy <<- cy + b; stroke_id <<- stroke_id + 1 },
+          "l" = { cx <<- cx + a; cy <<- cy + b },
+          "h" = { cx <<- cx + a },
+          "v" = { cy <<- cy + a })
+        tibble::tibble(x = cx / upm, y = cy / upm, stroke = stroke_id)
+      })
+
+    rows |> dplyr::mutate(char = char, adv = adv / upm)
+  })
+}
+
+
+# sequence ####
 
 #' Generate text sequences with various properties.
 #' @param seed random seed for the character sequence.
@@ -84,6 +142,8 @@ gen_sequence <- function(
 
 }
 
+# charsets ####
+
 #' Define a map between characters and generated glyphs
 #' @description Generate a set of control points for a collection of glyphs mapped to characters. This initial map is then modified by merging n glyphs into one and adding jitter.
 #' @param seed random seed for the character map.
@@ -141,6 +201,48 @@ gen_charmap <- function(
 
 # layout ####
 
+#' Create a string dataframe from text and a font map
+#'
+#' @description Build glyph geometry for a text string. Dispatches based on map type:
+#'   a character string selects a hershey font, a dataframe from `parse_font()` uses
+#'   SVG font geometry.
+#' @param text a character string
+#' @param map a hershey font name (string) or pre-parsed SVG font data from `parse_font()`
+#' @return a tibble with columns: char_idx, char, offset, stroke, x, y
+#' @export
+#'
+create_string <- function(text, map) {
+
+  # use a hershey vector font
+  if (is.character(map)) {
+    text <- stringi::stri_trans_general(text, "Latin-ASCII")
+    hershey::create_string_df(text = text, font = map)
+
+  # use an SVG single-line font
+  } else {
+    chars <- stringr::str_split(text, "")[[1]]
+    adv_lookup <- map |> dplyr::distinct(char, adv)
+    median_adv <- stats::median(adv_lookup$adv)
+
+    # per-character table with cumulative offsets
+    char_table <- tibble::tibble(char = chars, char_idx = seq_along(chars)) |>
+      dplyr::left_join(adv_lookup, by = "char") |>
+      dplyr::mutate(adv = dplyr::coalesce(adv, median_adv)) |>
+      dplyr::mutate(offset = cumsum(dplyr::lag(adv, default = 0)))
+
+    # expand with glyph geometry, shift x by offset
+    char_table |>
+      dplyr::left_join(
+        map |> dplyr::select(char, stroke, gx = x, gy = y),
+        by = "char", relationship = "many-to-many") |>
+      dplyr::transmute(
+        char_idx, char, offset,
+        stroke = dplyr::coalesce(stroke, 1L),
+        x = dplyr::coalesce(gx + offset, offset),
+        y = dplyr::coalesce(gy, 0))
+  }
+}
+
 #' Create a concatenated set of control points (glyph) from a sequence of characters.
 #' @description One glyph is created from n characters, defined by individual sets of control points.
 #' @param seq a sequence of characters (string)
@@ -164,7 +266,8 @@ layout_glyph <- function(seq, map, shift = 1) {
 #' Layout a glyph set as a function of a character string and a character map.
 #' @description Emulates text by juxtaposing glyphs, and adding individual variation.
 #' @param seq a character sequence.
-#' @param map a character map generated by `gen_charmap()`
+#' @param map a hershey font name (string), pre-parsed SVG font from `parse_font()`,
+#'   or a generative character map from `gen_charmap()`
 #' @param cut maximum number of glyphs on a line or columns
 #' @param flow number of glyphs allowed after the initial line cut, 0 means no overflowing
 #' @param noise period and amplitude of character deformations (vector fonts)
@@ -179,14 +282,11 @@ layout_sequence <- function(
     noise = c(0,0), scale = c(2.5, 5), space = c(0, 0),
     orientation = "lrtb") {
 
-  # use a vector-based font
-  if (is.character(map)) {
-
-    # remove non ASCII characters
-    seq <- stringi::stri_trans_general(seq, "Latin-ASCII")
+  # use a font-based map (hershey or SVG single-line font)
+  if (is.character(map) || tibble::has_name(map, "adv")) {
 
     # create glyph geometry
-    string <- hershey::create_string_df(text = seq, font = map) |>
+    string <- create_string(seq, map) |>
       dplyr::select(position = char_idx, glyph = char, offset, stroke, x, y) |>
       dplyr::group_by(position, glyph, offset) |> tidyr::nest(.key = "layout") |>
       dplyr::ungroup() |>
@@ -195,7 +295,7 @@ layout_sequence <- function(
         layout = purrr::map(
           layout, ~ tr_wave(., period = noise[1], amplitude = noise[2], delta = 0)))
 
-  # use a custom character map
+  # use a generative character map
   } else {
 
     # split input string to characters
@@ -302,26 +402,37 @@ layout_paragraph <- function(
 
 # render ####
 
-#' Render spline curves from control points and grouping indices.
-#' @param data a dataframe with x and y columns defining control points, and *group* and *glyph* columns defining grouping structure.
-#' @param type Either 'clamped' (default) or 'open'. Ensures the spline starts and ends at the terminal control points.
-#' @param n number of points generated for the spline curve.
-#' @param color,width,alpha arguments passed to `geom_bspline()`
+#' Render text from glyph geometry.
+#' @param data a dataframe with x and y columns, and *group* and *glyph* columns defining grouping structure.
+#' @param method rendering method: "spline" (B-spline interpolation) or "path" (straight line segments)
+#' @param type Either 'clamped' (default) or 'open'. Only used with method = "spline".
+#' @param n number of points generated for the spline curve. Only used with method = "spline".
+#' @param color,width,alpha aesthetics passed to the geom
 #' @param coord coordinate system passed to `ggplot()`, default to coord_fixed()
 #' @return a ggplot object
 #' @export
 #'
-render_spline <- function(
-    data, type = "clamped", n = 100,
+render_text <- function(
+    data, method = "spline", type = "clamped", n = 100,
     color = "black", width = 0.5, alpha = 1, coord = ggplot2::coord_fixed()) {
 
   # glyphs mapped to whitespace are not drawed, but plot limits account for them
-  plot <- ggplot2::ggplot() +
-    ggforce::geom_bspline(
-      data = data |> dplyr::filter(glyph != " "),
-      ggplot2::aes(x, y, group = group),
+  d <- data |> dplyr::filter(glyph != " ")
+
+  layer_text <- switch(
+    method,
+    "spline" = ggforce::geom_bspline(
+      data = d, ggplot2::aes(x, y, group = group),
       lineend = "round", type = type, n = n,
-      color = color, linewidth = width, alpha = alpha) +
+      color = color, linewidth = width, alpha = alpha),
+    "path" = ggplot2::geom_path(
+      data = d, ggplot2::aes(x, y, group = group),
+      lineend = "round",
+      color = color, linewidth = width, alpha = alpha),
+    stop("Invalid `method` value"))
+
+  plot <- ggplot2::ggplot() + 
+    layer_text +
     coord + ggplot2::lims(x = range(data$x), y = range(data$y)) +
     ggplot2::theme_void()
 

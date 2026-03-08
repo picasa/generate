@@ -154,31 +154,23 @@ tr_jitter <- function(data, a, index = NULL) {
 #'
 tr_wave <- function(data, period = 30, amplitude = 1/10, delta = 0){
 
-  if (nrow(data) > 2) {
-    width <- diff(range(data$x))
-    height <- diff(range(data$y))
+  if (nrow(data) <= 2 || period == 0 || amplitude == 0) return(data)
 
-    # create basic sine wave variation
-    knots <- seq(min(data$x), max(data$x), length.out = max(5, ceiling(width)))
-    variation <- sin((2 * pi / period) * knots) * amplitude
+  width <- diff(range(data$x))
+  height <- diff(range(data$y))
 
-    # create smooth interpolation function
-    f_spline <- stats::smooth.spline(knots, variation)
+  # create basic sine wave variation
+  knots <- seq(min(data$x), max(data$x), length.out = max(5, ceiling(width)))
+  variation <- sin((2 * pi / period) * knots) * amplitude
 
-    # apply to both x and y, with phase shift for y
-    data_tr <- data |>
-      dplyr::mutate(
-        x = x + stats::predict(f_spline, x)$y * width ,
-        y = y + stats::predict(f_spline, x + delta)$y * height
-      )
+  # create smooth interpolation function
+  f_spline <- stats::smooth.spline(knots, variation)
 
-    return(data_tr)
-
-  } else {
-
-    return(data)
-
-  }
+  # apply to both x and y, with phase shift for y
+  data |>
+    dplyr::mutate(
+      x = x + stats::predict(f_spline, x)$y * width,
+      y = y + stats::predict(f_spline, x + delta)$y * height)
 
 }
 
