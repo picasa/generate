@@ -37,6 +37,7 @@ A vector of length 2 (width, height) ignores the orientation and ratio parameter
 \item "raster": pre-loaded raster object passed via \code{data}
 \item "db_alti": French IGN BD ALTI 75x75m
 \item "rge_alti": French IGN RGE ALTI 5x5m, with 1-20m source input.
+\item "rge_cog": French IGN RGE ALTI 5x5m, Cloud-Optimized GeoTIFF.
 \item "api": elevatr package, EU-DEM / Copernicus (~30m, zoom-dependent)
 }}
 

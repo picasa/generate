@@ -7,7 +7,7 @@
 read_tiles(coord, buffer, source)
 }
 \arguments{
-\item{coord}{sf point in EPSG:2154, or named vector with lon/lat in decimal degrees}
+\item{coord}{sf point in EPSG:2154}
 
 \item{buffer}{circular buffer around the centroid (numeric, m).}
 

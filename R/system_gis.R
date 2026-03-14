@@ -27,7 +27,7 @@ as_xyz <- function(data, z = "z") {
 ## io ####
 
 #' Read DEM tiles from IGN public elevation datasets
-#' @param coord sf point in EPSG:2154, or named vector with lon/lat in decimal degrees
+#' @param coord sf point in EPSG:2154
 #' @param buffer circular buffer around the centroid (numeric, m).
 #' @param source DEM database to be used (character).
 #' * "db_alti" is a national database at 25x25m resolution.
@@ -67,6 +67,25 @@ read_tiles <- function(coord, buffer, source) {
   dem <- purrr::reduce(dem_list$dem, stars::st_mosaic)
 }
 
+#' Read DEM from a COG (Cloud-Optimized GeoTIFF) file
+#'
+#' Analogous to `read_tiles()`: crops around a coordinate and returns a stars object.
+#' GDAL reads only the tiles that intersect the requested extent.
+#' @param coord sf point in EPSG:2154
+#' @param buffer circular buffer around the centroid (numeric, m)
+#' @param source COG filename (e.g. "rge_alti_5m.tif")
+#' @param path directory containing the COG file (default "data/private/geotiff")
+#' @return stars object with column "z" and CRS 2154
+#'
+read_cog <- function(coord, buffer, source = "rge_alti_5m.tif", path = "data/private/geotiff") {
+  dem <- terra::rast(file.path(path, source))
+  box <- coord |> sf::st_buffer(buffer) |> sf::st_bbox()
+  terra::crop(dem, terra::ext(box)) |>
+    stars::st_as_stars() |>
+    purrr::set_names("z") |>
+    sf::st_set_crs(2154)
+}
+
 #' Read and crop DEM data from multiple sources
 #'
 #' Unifies all elevation data sources and crops to an oriented bounding box computed from the center coordinate.
@@ -82,6 +101,7 @@ read_tiles <- function(coord, buffer, source) {
 #'   * "raster": pre-loaded raster object passed via `data`
 #'   * "db_alti": French IGN BD ALTI 75x75m
 #'   * "rge_alti": French IGN RGE ALTI 5x5m, with 1-20m source input.
+#'   * "rge_cog": French IGN RGE ALTI 5x5m, Cloud-Optimized GeoTIFF.
 #'   * "api": elevatr package, EU-DEM / Copernicus (~30m, zoom-dependent)
 #' @param data raster object, used when source = "raster" to sample and crop an object in memory (default NULL)
 #' @return a digital elevation model as a cropped spatial data object (stars)
@@ -108,6 +128,7 @@ read_dem <- function(
     raster = {data},
     db_alti = {read_tiles(coord = coord, buffer = size, source = source)},
     rge_alti = {read_tiles(coord = coord, buffer = size * 0.6, source = source)},
+    rge_cog = {read_cog(coord = coord, buffer = size * 0.6)},
     api = {suppressWarnings(elevatr::get_elev_raster(coord, z = zoom, expand = max(size) * 0.5))},
     stop("Invalid `source` value")
   )
