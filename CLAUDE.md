@@ -37,7 +37,7 @@ man/                      # Roxygen2-generated documentation
 
 **Attractors** (`system_attractors.R`) - Discrete-time dynamical systems. Implements Sprott's method for automatic strange attractor generation via letter-to-parameter encoding. Includes Lyapunov exponent computation for chaos detection and text rendering using attractor glyphs.
 
-**GIS** (`system_gis.R`) - Reads IGN elevation data (DBALTI 25m, RGEALTI 5m). Renders terrain as ridge plots with perspective occlusion or contour maps with waterlines. Multiple filtering methods for ridgeline cleaning (length, slope, rank).
+**GIS** (`system_gis.R`) - Reads IGN elevation data (DBALTI 25m, RGEALTI 5m, COG GeoTIFF). Converts rasters to xyz tibbles (`as_xyz`). Renders terrain as ridge plots with perspective occlusion, multi-layer stacking (`stack_lines`), loess-smoothed lines (`layer_smooth`), and horizon envelope (`layer_horizon`), or contour maps with waterlines. Multiple filtering methods for ridgeline cleaning (length, slope, rank). Configurable coordinate system and cropping in `plot_ridge`.
 
 **Graph** (`system_graph.R`) - Renders point layouts using graph algorithms (RNG, KNN, MST) with five aesthetic modes (default, line, quadratic Bezier, cubic Bezier, arc). Uses cccd/tidygraph/ggraph.
 
@@ -82,7 +82,7 @@ man/                      # Roxygen2-generated documentation
 
 **Suggests** (optional, by system):
 - Graph: igraph, tidygraph, ggraph, cccd
-- GIS: sf, stars, units
+- GIS: sf, stars, terra, units, elevatr
 - ODE: deSolve, lhs, furrr
 - Sampling: randtoolbox, truncnorm, MASS
 - Text: stringi, stringr, hershey
@@ -108,22 +108,26 @@ man/                      # Roxygen2-generated documentation
 
 Major development phases, from git history (62 commits, Nov 2021 - Jan 2026):
 
-### Phase 1 - Foundation (Nov 2021 - Mar 2022)
+### Foundation (Nov 2021 - Mar 2022)
 
 Initial package creation with core systems: attractors, GIS (ridge/contour rendering), graph rendering, ODE simulations, Collatz sequences, and spline-based text generation. Documented all systems and bumped to version 1.0.0.
 
-### Phase 2 - Expansion (Apr - Oct 2022)
+### Expansion (Apr - Oct 2022)
 
 Extended existing systems: added MST and arc methods for graphs, perspective scaling for ridges, cubic Bezier curves, frame rendering (`get_box`, `sample_rectangle`, `render_frame`). Added `save_plot()`, color support in spline functions. Switched to base R pipe operator (`|>`).
 
-### Phase 3 - Consolidation (Jan - Nov 2023)
+### Consolidation (Jan - Nov 2023)
 
 Added theming (`theme_paper`), paper texture (`gen_paper`), pseudorandom sequence generators, and parallel simulation support. Merged sampling functions under `layout_*` prefix. Rewrote asemic text system in a more generic way, replacing cowplot with direct ggplot calls.
 
-### Phase 4 - Text System Refinement (May 2024 - Feb 2025)
+### Text System Refinement (May 2024 - Feb 2025)
 
 Focused on the spline/text system: character and word spacing control, whitespace handling, text overflow, partition/indexing utilities. Added vector font rendering support, periodic wave transformations for 2D objects. Replaced remaining R pipes with magrittr in legacy functions.
 
-### Phase 5 - Utilities & Maintenance (Feb 2025 - Jan 2026)
+### Utilities & Maintenance (Feb 2025 - Jan 2026)
 
 Extended utilities: local extrema detection (`l_max`, `l_min`), line smoothing transformations (`tr_loess`), recursive transforms (`tr_recurse`). Updated for ggplot2 4.0 compatibility. Bug fixes in extrema functions, group indexing, and limit adjustment.
+
+### GIS Refactor & Fonts (Jan - Mar 2026)
+
+Refactored `system_gis.R` into generic primitives: separated shift/mask/stack pipeline, added `read_cog()` for Cloud-Optimized GeoTIFF, `as_xyz()` raster-to-tibble helper, `stack_lines()` for multi-layer stacking, `layer_smooth()` for loess-smoothed rendering, `layer_horizon()` for upper envelope. Added configurable coordinate system and cropping limits to `plot_ridge()`. Added single-line SVG font support in splines. Bug fixes in `mask_lines()` NA handling and raster rotation.
