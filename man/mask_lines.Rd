@@ -23,7 +23,7 @@ input dataframe with additional columns:
 }
 }
 \description{
-Step 3 of the ridge pipeline: for each x-column, marks a point as NA if its
+For each x-column, marks a point as NA if its
 shifted value \{z\}s is too close to any of the n_lag preceding values. Uses a
 single roll_max instead of n_lag lag columns:
 any(x - x_k < t) <-> x - max(x_k) < t

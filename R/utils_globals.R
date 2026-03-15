@@ -20,5 +20,5 @@ utils::globalVariables(c(
   "word",
   "x", "x0", "x_rank", "xend", "xn", "xp",
   "y", "y0", "y_dist", "y_rank", "yend",
-  "z", "z_alpha", "z_slope", "zl", "zl_n", "zn", "zs", "zs_max", "zs_rmax"
+  "z", "z_alpha", "z_slope", "z_jitter", "zl", "zl_n", "zn", "zs", "zs_max", "zs_rmax"
 ))

@@ -37,7 +37,7 @@ man/                      # Roxygen2-generated documentation
 
 **Attractors** (`system_attractors.R`) - Discrete-time dynamical systems. Implements Sprott's method for automatic strange attractor generation via letter-to-parameter encoding. Includes Lyapunov exponent computation for chaos detection and text rendering using attractor glyphs.
 
-**GIS** (`system_gis.R`) - Reads IGN elevation data (DBALTI 25m, RGEALTI 5m, COG GeoTIFF). Converts rasters to xyz tibbles (`as_xyz`). Renders terrain as ridge plots with perspective occlusion, multi-layer stacking (`stack_lines`), loess-smoothed lines (`layer_smooth`), and horizon envelope (`layer_horizon`), or contour maps with waterlines. Multiple filtering methods for ridgeline cleaning (length, slope, rank). Configurable coordinate system and cropping in `plot_ridge`.
+**GIS** (`system_gis.R`) - Reads IGN elevation data (DBALTI 25m, RGEALTI 5m, COG GeoTIFF). Converts rasters to xyz tibbles (`as_xyz`). Renders terrain as ridge plots with perspective occlusion, multi-layer stacking (`stack_lines`), loess-smoothed lines (`layer_smooth`), and horizon envelope (`layer_horizon`), or contour maps with waterlines. Sampling functions for ridgeline processing: length filtering (`sample_length`), slope-based removal (`sample_slope`), point subsampling with optional slope-proportional jitter (`sample_sparse`). Configurable coordinate system and cropping in `plot_ridge`.
 
 **Graph** (`system_graph.R`) - Renders point layouts using graph algorithms (RNG, KNN, MST) with five aesthetic modes (default, line, quadratic Bezier, cubic Bezier, arc). Uses cccd/tidygraph/ggraph.
 
@@ -69,8 +69,7 @@ man/                      # Roxygen2-generated documentation
 | `render_*` | Render ggplot objects | `render_spline()`, `render_ridge()` |
 | `layout_*` | Arrange elements in space | `layout_paragraph()`, `layout_ellipse()` |
 | `tr_*` | Transform coordinates | `tr_rotate()`, `tr_wave()` |
-| `filter_*` | Filter data subsets | `filter_ridge_length()` |
-| `sample_*` | Sample points or values | `sample_rectangle()`, `sample_letters()` |
+| `sample_*` | Sample, subsample, or filter data | `sample_rectangle()`, `sample_sparse()` |
 | `f_*` | Mathematical functions | `f_sig()`, `f_exp()` |
 | `l_*` | Local feature detection | `l_max()`, `l_min()` |
 | `simulate_*` | ODE integration | `simulate_lorenz()` |
@@ -130,4 +129,4 @@ Extended utilities: local extrema detection (`l_max`, `l_min`), line smoothing t
 
 ### GIS Refactor & Fonts (Jan - Mar 2026)
 
-Refactored `system_gis.R` into generic primitives: separated shift/mask/stack pipeline, added `read_cog()` for Cloud-Optimized GeoTIFF, `as_xyz()` raster-to-tibble helper, `stack_lines()` for multi-layer stacking, `layer_smooth()` for loess-smoothed rendering, `layer_horizon()` for upper envelope. Added configurable coordinate system and cropping limits to `plot_ridge()`. Added single-line SVG font support in splines. Bug fixes in `mask_lines()` NA handling and raster rotation.
+Refactored `system_gis.R` into generic primitives: separated shift/mask/stack pipeline, added `read_cog()` for Cloud-Optimized GeoTIFF, `as_xyz()` raster-to-tibble helper, `stack_lines()` for multi-layer stacking, `layer_smooth()` for loess-smoothed rendering, `layer_horizon()` for upper envelope. Added configurable coordinate system and cropping limits to `plot_ridge()`. Renamed `filter_ridge_*` functions to `sample_*` (`sample_length`, `sample_slope`, `sample_sparse`) and replaced rank-based ridge filtering with point subsampling and slope-proportional jitter. Added single-line SVG font support in splines. Bug fixes in `mask_lines()` NA handling and raster rotation.

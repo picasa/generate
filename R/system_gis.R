@@ -262,7 +262,7 @@ stack_lines <- function(layers, z = "z", z_stack = 1, offsets = NULL) {
 
 #' Apply intersection masking using sliding window maximum
 #'
-#' Step 3 of the ridge pipeline: for each x-column, marks a point as NA if its
+#' For each x-column, marks a point as NA if its
 #' shifted value \{z\}s is too close to any of the n_lag preceding values. Uses a
 #' single roll_max instead of n_lag lag columns:
 #'   any(x - x_k < t) <-> x - max(x_k) < t
@@ -306,7 +306,7 @@ mask_lines <- function(data, z = "z", n_lag = 100, threshold = 10) {
 #' @return filtered dataframe with short segments set to NA
 #' @export
 #'
-filter_ridge_length <- function(
+sample_length <- function(
   data,
   length_n = 10,
   length_x = 5/100,
@@ -331,16 +331,18 @@ filter_ridge_length <- function(
 
 }
 
-#' Filter ridgeline dataframe as a function of local slope
+#' Remove points as a function of local slope along ridge lines
 #'
 #' Computes a rolling average of the absolute slope along each ridge line and
-#' sets flat segments (slope = 0) to NA.
-#' @param data dataframe of processed ridgelines with zn, xn, y_rank, x_rank columns
-#' @param size size of window used to compute the slope rolling average (integer, cells)
-#' @return filtered dataframe with z_slope column and flat segments set to NA
+#' sets flat segments (slope = 0) to NA, creating line interruptions in geom_path.
+#'
+#' @param data dataframe with zn, xn, y_rank, x_rank columns (from mask_lines)
+#' @param size window size for the slope rolling average (integer, cells)
+#' @return input dataframe with additional column:
+#'   * `z_slope`: rolling mean of absolute slope per ridge line
 #' @export
 
-filter_ridge_slope <- function(
+sample_slope <- function(
   data,
   size = 3
 ) {
@@ -361,56 +363,42 @@ filter_ridge_slope <- function(
 }
 
 
-#' Filter ridgeline dataframe as a function of rank index
+#' Subsample and jitter points along ridge lines
 #'
-#' Subsets ridgelines by their y_rank using random, uniform, or strip-based sampling.
-#' @param data dataframe of processed ridgelines with y_rank column
-#' @param p proportion of ridgelines to keep (numeric, 0-1)
-#' @param method method used to select ridges.
-#'   * "random": randomly sample a proportion of ridges.
-#'   * "grid": uniformly sample a proportion of ridges.
-#'   * "strip": sample consecutive strips of ridges.
-#' @return filtered dataframe with selected ridgelines
+#' Randomly removes a proportion of points per ridge line, then adds noise
+#' to the remaining elevation values. Jitter amplitude can be uniform or
+#' proportional to local slope (requires z_slope column from sample_slope).
+#'
+#' @param data dataframe with zn, y_rank columns (from mask_lines or sample_slope)
+#' @param p proportion of points to remove per ridge line (numeric, 0-1)
+#' @param jitter noise amplitude on zn (m). 0 = no noise (default 0)
+#' @param k exponent controlling slope-proportional jitter via f_exp().
+#'   0 = uniform jitter, >0 = jitter increases with slope (default 0)
+#' @param a asymptote parameter for f_exp() (default 0.3)
+#' @return input dataframe with fewer rows and modified zn values
 #' @export
+sample_sparse <- function(data, p = 0.8, jitter = 0, k = 0, a = 0.3) {
 
-filter_ridge_rank <- function(data, p, method = "grid") {
+  # subsample points per ridge line
+  data_sample <- data |>
+    dplyr::slice_sample(prop = 1 - p, by = y_rank)
 
-  switch(
-    method,
+  # uniform jitter
+  if (jitter > 0 && k == 0) {
+    data_sample <- data_sample |>
+      dplyr::mutate(zn = suppressWarnings(jitter(zn, amount = jitter)))
+  }
 
-    random = {
-      dplyr::inner_join(
-        data,
-        data |> dplyr::distinct(y_rank) |>
-          dplyr::slice_sample(prop = p)
-      )
-    },
+  # slope-proportional jitter (requires z_slope from sample_slope)
+  if (jitter > 0 && k > 0) {
+    data_sample <- data_sample |>
+      dplyr::mutate(z_jitter = f_exp(z_slope, k = k, a = a, scale = TRUE) * jitter, .by = y_rank) |>
+      dplyr::mutate(z_jitter = suppressWarnings(stats::runif(dplyr::n(), -z_jitter, z_jitter))) |>
+      dplyr::mutate(zn = zn + z_jitter)
+  }
 
-    grid = {
-      dplyr::inner_join(
-        data,
-        data |> dplyr::distinct(y_rank) |>
-          dplyr::slice(
-            seq(1, dplyr::n(), len = p * dplyr::n()) |>
-              as.integer()
-          )
-      )
-    },
-
-    strip = {
-      dplyr::inner_join(
-        data,
-        data |> dplyr::distinct(y_rank) |>
-          dplyr::slice(
-            sample(1:dplyr::n(), p * dplyr::n()) |>
-              purrr::map(~ .x:(.x + 40)) |> purrr::flatten_int()
-          )
-      )
-    },
-    stop("Invalid `method` value")
-  )
+  return(data_sample)
 }
-
 
 
 ## generation ####
